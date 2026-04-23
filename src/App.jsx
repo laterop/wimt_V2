@@ -5,7 +5,9 @@ import "leaflet/dist/leaflet.css";
 import Papa from "papaparse";
 import protobuf from "protobufjs";
 
-const GTFS_RT_URL = "https://data.montpellier3m.fr/TAM_MMM_GTFSRT/VehiclePosition.pb";
+// Remplace cette URL par l'URL de ton Cloudflare Worker une fois déployé
+// Ex: "https://tam-proxy.ton-user.workers.dev"
+const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://data.montpellier3m.fr/GTFS/Urbain/VehiclePosition.pb";
 
 // Cache global pour ne charger les CSV et le proto qu'une seule fois
 let gtfsCache = null;
