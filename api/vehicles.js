@@ -1,20 +1,16 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import protobuf from 'protobufjs';
 import csv from 'csv-parser';
-import { Readable } from 'stream';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Les fichiers CSV sont dans /data à la racine du projet
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const PROTO_PATH = path.join(__dirname, '..', 'public', 'gtfs-realtime.proto');
 
 function loadCSV(filePath, keyField) {
   return new Promise((resolve, reject) => {
     const store = new Map();
+    if (!fs.existsSync(filePath)) {
+      console.warn(`Fichier introuvable : ${filePath}`);
+      return resolve(store);
+    }
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (row) => {
@@ -26,7 +22,6 @@ function loadCSV(filePath, keyField) {
 }
 
 export default async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') {
@@ -35,17 +30,30 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Sur Vercel, process.cwd() pointe vers la racine du projet
+    const root = process.cwd();
+    const dataDir = path.join(root, 'data');
+    const protoPath = path.join(root, 'public', 'gtfs-realtime.proto');
+
+    console.log('root:', root);
+    console.log('dataDir:', dataDir);
+    console.log('protoPath:', protoPath);
+    console.log('data exists:', fs.existsSync(dataDir));
+    console.log('proto exists:', fs.existsSync(protoPath));
+
     const [trips, routes] = await Promise.all([
-      loadCSV(path.join(DATA_DIR, 'trips.txt'), 'trip_id'),
-      loadCSV(path.join(DATA_DIR, 'routes.txt'), 'route_id'),
+      loadCSV(path.join(dataDir, 'trips.txt'), 'trip_id'),
+      loadCSV(path.join(dataDir, 'routes.txt'), 'route_id'),
     ]);
+
+    console.log(`Routes: ${routes.size}, Trips: ${trips.size}`);
 
     const response = await fetch('https://data.montpellier3m.fr/TAM_MMM_GTFSRT/VehiclePosition.pb');
     const buffer = await response.arrayBuffer();
 
-    const protoText = fs.readFileSync(PROTO_PATH, 'utf8');
-    const root = protobuf.parse(protoText).root;
-    const FeedMessage = root.lookupType('transit_realtime.FeedMessage');
+    const protoText = fs.readFileSync(protoPath, 'utf8');
+    const root2 = protobuf.parse(protoText).root;
+    const FeedMessage = root2.lookupType('transit_realtime.FeedMessage');
     const message = FeedMessage.decode(new Uint8Array(buffer));
 
     let positions = message.entity
@@ -85,10 +93,13 @@ export default async function handler(req, res) {
         route_short_name: '1',
         route_color: '0074c9',
         headsign: 'Simulation',
+        speed: 0,
       });
     }
 
+    console.log(`Envoi de ${positions.length} véhicule(s)`);
     res.status(200).json(positions);
+
   } catch (err) {
     console.error('Erreur serverless vehicles:', err);
     res.status(500).json({ error: 'Erreur serveur', details: err.message });

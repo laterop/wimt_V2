@@ -83,8 +83,12 @@ export default function CarteTAM() {
       try {
         const res = await fetch("/api/vehicles");
         const data = await res.json();
-        setVehicules(data);
-        setLastUpdate(new Date());
+        if (Array.isArray(data)) {
+          setVehicules(data);
+          setLastUpdate(new Date());
+        } else {
+          console.error("Réponse API invalide :", data);
+        }
       } catch (err) {
         console.error("Erreur chargement véhicules :", err);
       }
