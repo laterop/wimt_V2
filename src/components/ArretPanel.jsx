@@ -24,18 +24,22 @@ function estimateMinutes(v, stopLat, stopLon) {
 let stopsCache = null;
 async function loadStops() {
   if (stopsCache) return stopsCache;
-  const text = await fetch("/stops.txt").then(r => r.text());
+  // Supprime BOM UTF-8 et retours chariot Windows avant parsing
+  const raw = await fetch("/stops.txt").then(r => r.text());
+  const text = raw.replace(/^\uFEFF/, "").replace(/\r/g, "");
   const stops = [];
   Papa.parse(text, {
     header: true,
     skipEmptyLines: true,
     step: ({ data: d }) => {
-      if (d.stop_lat && d.stop_lon && d.stop_name) {
+      const lat = parseFloat(d.stop_lat);
+      const lon = parseFloat(d.stop_lon);
+      if (d.stop_name && !isNaN(lat) && !isNaN(lon)) {
         stops.push({
-          id: d.stop_id?.trim(),
-          name: d.stop_name?.trim(),
-          lat: parseFloat(d.stop_lat),
-          lon: parseFloat(d.stop_lon),
+          id:   (d.stop_id || "").trim(),
+          name: d.stop_name.trim(),
+          lat,
+          lon,
         });
       }
     },
