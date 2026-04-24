@@ -44,6 +44,34 @@ function isServiceActive(serviceId) {
   return true;
 }
 
+// Trouve le véhicule le plus probable pour un passage donné.
+// Stratégie : même ligne + même direction + le plus proche de l'arrêt (côté approche).
+// Les véhicules qui ont déjà dépassé l'arrêt sont pénalisés.
+function findVehicle(vehicules, passage, stopLat, stopLon) {
+  const candidates = vehicules.filter(v =>
+    v.route_short_name === passage.name &&
+    String(v.direction_id) === String(passage.dir)
+  );
+  if (candidates.length === 0) return null;
+
+  // Scoring : distance à l'arrêt (plus petit = mieux), pénalité si le véhicule a probablement dépassé
+  const scored = candidates.map(v => {
+    const dist = distKm(v.lat, v.lon, stopLat, stopLon);
+    // Bearing du véhicule vers l'arrêt (approximatif pour pénaliser les dépassements)
+    const dLon = (stopLon - v.lon) * Math.cos((v.lat * Math.PI) / 180);
+    const dLat = stopLat - v.lat;
+    const bearingToStop = (Math.atan2(dLon, dLat) * 180 / Math.PI + 360) % 360;
+    const vBearing = v.bearing || 0;
+    const angleDiff = Math.abs(((bearingToStop - vBearing + 540) % 360) - 180);
+    // Si le véhicule se dirige vers l'arrêt (angleDiff < 90°), bonus
+    const penalty = angleDiff > 90 ? dist * 2 : 0;
+    return { v, score: dist + penalty };
+  });
+
+  scored.sort((a, b) => a.score - b.score);
+  return scored[0].v;
+}
+
 const TYPE_CONFIG = {
   tram: { label: "Tram", icon: "🚊", color: "#3b8eea", bg: "rgba(59,142,234,0.12)" },
   brt:  { label: "BRT",  icon: "🚌", color: "#e87fa3", bg: "rgba(232,127,163,0.12)" },
@@ -64,7 +92,7 @@ const POPULAR = ["Corum", "Comédie", "Gare Saint-Roch", "Mosson", "Odysseum", "
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function ArretPanel({ theme: t }) {
+export default function ArretPanel({ theme: t, vehicules = [], onTrackVehicle }) {
   const [query, setQuery]               = useState("");
   const [allMeta, setAllMeta]           = useState([]);     // [{name, entries:[{id,lat,lon,types}]}]
   const [suggestions, setSuggestions]   = useState([]);
@@ -333,7 +361,21 @@ export default function ArretPanel({ theme: t }) {
                 <div style={{ fontSize: 13, color: t.textSub, lineHeight: 1.7 }}>Aucun passage prévu dans la prochaine heure pour cet arrêt.</div>
               </div>
             ) : (
-              passages.map((p, i) => <PassageRow key={p.key + i} p={p} t={t} isFirst={i === 0} />)
+              passages.map((p, i) => {
+                const matched = selectedEntry
+                  ? findVehicle(vehicules, p, selectedEntry.lat, selectedEntry.lon)
+                  : null;
+                return (
+                  <PassageRow
+                    key={p.key + i}
+                    p={p}
+                    t={t}
+                    isFirst={i === 0}
+                    matchedVehicle={matched}
+                    onTrack={matched && onTrackVehicle ? () => onTrackVehicle(matched) : null}
+                  />
+                );
+              })
             )}
           </div>
         </div>
@@ -344,27 +386,53 @@ export default function ArretPanel({ theme: t }) {
 
 // ─── Ligne de passage ─────────────────────────────────────────────────────────
 
-function PassageRow({ p, t, isFirst }) {
+function PassageRow({ p, t, isFirst, matchedVehicle, onTrack }) {
   const color = p.color ? `#${p.color}` : "#0074c9";
   const mins  = p.mins;
   const minLabel = mins <= 0 ? "Imm." : `${mins} min`;
   const minColor = mins <= 1 ? "#22c55e" : mins <= 4 ? "#f59e0b" : t.accent;
 
   return (
-    <div style={{ padding: "11px 16px", borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 12, background: isFirst ? `${color}08` : t.panelBg }}>
-      <div style={{ minWidth: 34, height: 26, borderRadius: 7, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", padding: "0 6px", flexShrink: 0 }}>
-        {p.name}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {p.headsign}
+    <div style={{ borderBottom: `0.5px solid ${t.border}`, background: isFirst ? `${color}08` : t.panelBg }}>
+      <div style={{ padding: "11px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ minWidth: 34, height: 26, borderRadius: 7, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", padding: "0 6px", flexShrink: 0 }}>
+          {p.name}
         </div>
-        <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>départ {p.dep}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {p.headsign}
+          </div>
+          <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>départ {p.dep}</div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: minColor, lineHeight: 1 }}>{minLabel}</div>
+          {mins > 0 && <div style={{ fontSize: 9, color: t.textHint, marginTop: 2 }}>min</div>}
+        </div>
       </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: minColor, lineHeight: 1 }}>{minLabel}</div>
-        {mins > 0 && <div style={{ fontSize: 9, color: t.textHint, marginTop: 2 }}>min</div>}
-      </div>
+
+      {/* Bouton "Voir sur la carte" si un véhicule est localisé */}
+      {onTrack && (
+        <button
+          onClick={onTrack}
+          style={{
+            width: "100%", padding: "7px 16px 9px",
+            background: "none", border: "none", borderTop: `0.5px solid ${color}22`,
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+            fontFamily: "'Inter',system-ui,sans-serif", textAlign: "left",
+          }}
+        >
+          <span style={{ fontSize: 14 }}>📍</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color }}>Voir ce véhicule sur la carte</span>
+          {matchedVehicle.speed > 0 && (
+            <span style={{ fontSize: 10, color: t.textHint, marginLeft: "auto" }}>
+              {Math.round(matchedVehicle.speed)} km/h
+            </span>
+          )}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" style={{ marginLeft: matchedVehicle.speed > 0 ? 0 : "auto" }}>
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

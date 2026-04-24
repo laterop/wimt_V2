@@ -46,6 +46,7 @@ export function useVehicles() {
               bearing: pos.bearing || null,
               speed: pos.speed || null,
               route_id,
+              trip_id: trip.tripId?.trim() || null,
               route_short_name: short,
               route_long_name: route.route_long_name || "",
               route_color: route.route_color || "000000",

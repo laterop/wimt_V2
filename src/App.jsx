@@ -139,7 +139,14 @@ export default function WimT() {
           ...(activeTab === "live" ? { display: "none" } : {}),
         }}>
           {activeTab === "arret" && (
-            <ArretPanel theme={t} />
+            <ArretPanel
+              theme={t}
+              vehicules={vehicules}
+              onTrackVehicle={(v) => {
+                setActiveTab("live");
+                handleVehicleClick(v);
+              }}
+            />
           )}
           {activeTab === "lignes" && (
             <LignesPanel theme={t} groupedVehicles={groupedVehicles} onVehicleClick={handleVehicleClick} selectedVehicle={selectedVehicle} />
