@@ -1,56 +1,58 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 
-export default function VehicleMarker({ v, isSelected, onClick }) {
-  const color = `#${v.route_color}`;
-  const size = isSelected ? 18 : 12;
+export default function VehicleMarker({ v, isSelected, onClick, isDark }) {
+  const bg = `#${v.route_color}`;
+  const fg = `#${v.route_text_color || "ffffff"}`;
+  const size = isSelected ? 32 : 24;
+  const label = v.route_short_name.length > 2 ? v.route_short_name.slice(0, 2) : v.route_short_name;
 
   const icon = L.divIcon({
     className: "",
-    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 0 0 ${isSelected ? "4px" : "2px"} ${color}66,0 2px 8px rgba(0,0,0,0.3);transition:all 0.2s;"></div>`,
+    html: `
+      <div style="
+        width:${size}px;height:${size}px;border-radius:${size * 0.3}px;
+        background:${bg};color:${fg};
+        border:2.5px solid rgba(255,255,255,${isSelected ? 1 : 0.9});
+        box-shadow:0 0 0 ${isSelected ? 3 : 0}px ${bg}55, 0 2px 8px rgba(0,0,0,0.35);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Inter',system-ui,sans-serif;
+        font-size:${size <= 24 ? 9 : 11}px;font-weight:700;
+        transition:all 0.15s;
+        cursor:pointer;
+      ">${label}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 
-  const typeLabel =
-    v.vehicleType === "tram" ? "🚊 Tram" :
-    v.vehicleType === "bustram" ? "🚌 BRT" :
-    "🚌 Bus";
+  const panelBg = isDark ? "#16181f" : "#ffffff";
+  const border  = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+  const text    = isDark ? "#f0f2f7" : "#0f172a";
+  const sub     = isDark ? "#7a7f94" : "#64748b";
 
   return (
     <Marker position={[v.lat, v.lon]} icon={icon} eventHandlers={{ click: onClick }}>
       <Popup>
-        <div style={{ fontFamily: "system-ui,sans-serif", minWidth: 170 }}>
-          <div style={{
-            background: color,
-            color: `#${v.route_text_color || "fff"}`,
-            padding: "6px 10px",
-            borderRadius: "6px 6px 0 0",
-            margin: "-13px -19px 10px",
-            fontWeight: 700,
-            fontSize: 13,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}>
-            <span>Ligne {v.route_short_name}</span>
-            <span style={{ fontSize: 10, opacity: 0.85, fontWeight: 400 }}>{typeLabel}</span>
-          </div>
-          <div style={{ fontSize: 13, lineHeight: 1.7, padding: "0 2px" }}>
-            <div style={{ fontWeight: 600 }}>{v.headsign}</div>
-            <div style={{ color: "#888", fontSize: 11, marginBottom: 4 }}>{v.route_long_name}</div>
-            <div style={{ color: "#666", fontSize: 11 }}>ID {v.id}</div>
-            {v.speed != null && (
-              <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{
-                  display: "inline-block",
-                  width: 6, height: 6,
-                  borderRadius: "50%",
-                  background: v.speed > 0 ? "#22c55e" : "#f59e0b",
-                }}></span>
-                {v.speed > 0 ? `${Math.round(v.speed)} km/h` : "À l'arrêt"}
+        <div style={{ fontFamily: "'Inter',system-ui,sans-serif", minWidth: 180, background: panelBg, borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ background: bg, color: fg, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>Ligne {v.route_short_name}</div>
+              <div style={{ fontSize: 10, opacity: 0.8, marginTop: 1 }}>
+                {v.vehicleType === "tram" ? "Tramway" : v.vehicleType === "bustram" ? "BRT" : "Bus"}
               </div>
+            </div>
+            <div style={{ fontSize: 20 }}>{v.vehicleType === "tram" ? "🚊" : "🚌"}</div>
+          </div>
+          <div style={{ padding: "10px 14px" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: text, marginBottom: 2 }}>{v.headsign}</div>
+            {v.route_long_name && (
+              <div style={{ fontSize: 10, color: sub, marginBottom: 8 }}>{v.route_long_name}</div>
             )}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: sub }}>
+              <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: v.speed > 0 ? "#22c55e" : "#f59e0b" }}></span>
+              {v.speed > 0 ? `${Math.round(v.speed)} km/h` : "À l'arrêt"}
+              <span style={{ marginLeft: "auto", color: isDark ? "#4a4f62" : "#94a3b8" }}>ID {v.id}</span>
+            </div>
           </div>
         </div>
       </Popup>
