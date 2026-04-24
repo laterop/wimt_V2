@@ -24,24 +24,61 @@ function distKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function depToTimestamp(dep) {
+// En GTFS, les services qui finissent après minuit utilisent des heures > 24
+// (ex: 25:30 = 1h30 du matin le lendemain du jour de service).
+// Si on est entre minuit et 4h du matin, on est potentiellement encore dans
+// la journée de service de la veille : on calcule les timestamps sur deux bases
+// (minuit d'aujourd'hui ET minuit d'hier) et on retourne les deux.
+function depToTimestamps(dep) {
   const parts = dep.split(":");
-  if (parts.length < 2) return null;
+  if (parts.length < 2) return [];
   const h = parseInt(parts[0], 10);
   const m = parseInt(parts[1], 10);
   const s = parseInt(parts[2] || "0", 10);
+  const secs = h * 3600 + m * 60 + s;
+
   const now = new Date();
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
-  return midnight + h * 3600 + m * 60 + s;
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+  const yesterdayMidnight = todayMidnight - 86400;
+
+  const results = [todayMidnight + secs];
+  // Si on est avant 4h du matin, inclure aussi la base de la veille
+  if (now.getHours() < 4) {
+    results.push(yesterdayMidnight + secs);
+  }
+  return results;
+}
+
+// Jour de service effectif : si on est entre minuit et 4h, le service actif
+// peut être celui de la veille (services nocturnes > 24h en GTFS).
+function getServiceDays() {
+  const now = new Date();
+  const dow = now.getDay(); // 0=dim, 1=lun, ..., 6=sam
+  const days = [dow];
+  // Entre minuit et 4h : on inclut aussi le jour de la veille
+  if (now.getHours() < 4) {
+    days.push((dow + 6) % 7); // jour précédent
+  }
+  return days;
 }
 
 function isServiceActive(serviceId) {
-  const dow = new Date().getDay();
+  const days = getServiceDays();
   const id = (serviceId || "").toUpperCase();
-  if (id.includes("LAV") || id.includes("SEMAINE")) return dow >= 1 && dow <= 5;
-  if (id.includes("RED")) return dow >= 1 && dow <= 5;
-  if (id.includes("SAM") || id.includes("SAMEDI")) return dow === 6;
-  if (id.includes("DIM") || id.includes("DIMANCHE")) return dow === 0;
+
+  const isWeekday = (d) => d >= 1 && d <= 5;
+  const isSat     = (d) => d === 6;
+  const isSun     = (d) => d === 0;
+
+  if (id.includes("LAV") || id.includes("SEMAINE") || id.includes("RED")) {
+    return days.some(isWeekday);
+  }
+  if (id.includes("SAM") || id.includes("SAMEDI")) {
+    return days.some(isSat);
+  }
+  if (id.includes("DIM") || id.includes("DIMANCHE")) {
+    return days.some(isSun);
+  }
   return true;
 }
 
@@ -129,19 +166,28 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
       const results = [];
       for (const p of data) {
         if (!isServiceActive(p.s)) continue;
-        const ts = depToTimestamp(p.dep);
-        if (ts == null) continue;
-        const mins = Math.round((ts - now) / 60);
-        if (mins < -1 || mins > 90) continue;
-        results.push({
-          key:      `${p.dep}|${p.n}|${p.h}`,
-          ts, mins,
-          dep:      p.dep.slice(0, 5),
-          name:     p.n,
-          headsign: p.h,
-          color:    p.c,
-          dir:      p.d,
-        });
+        // depToTimestamps retourne 1 ou 2 timestamps (hier + aujourd'hui si < 4h du matin)
+        const timestamps = depToTimestamps(p.dep);
+        for (const ts of timestamps) {
+          const mins = Math.round((ts - now) / 60);
+          if (mins < -1 || mins > 90) continue;
+          // Affichage de l'heure : si h >= 24, soustraire 24 pour l'affichage
+          const parts = p.dep.split(":");
+          const h = parseInt(parts[0], 10);
+          const displayDep = h >= 24
+            ? `${String(h - 24).padStart(2, "0")}:${parts[1]}`
+            : p.dep.slice(0, 5);
+          results.push({
+            key:      `${ts}|${p.n}|${p.h}`,
+            ts, mins,
+            dep:      displayDep,
+            name:     p.n,
+            headsign: p.h,
+            color:    p.c,
+            dir:      p.d,
+          });
+          break; // on prend le premier timestamp valide (le plus proche dans le futur)
+        }
       }
       const seen = new Set();
       const deduped = results
