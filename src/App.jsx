@@ -40,6 +40,7 @@ export default function WimT() {
   const [activeTab, setActiveTab] = useState("live");
   const [filtreLigne, setFiltreLigne] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedLine, setSelectedLine] = useState(null);  // { short_name, color, text_color, type }
   const [selectedRouteData, setSelectedRouteData] = useState(null);
   const [sortBy] = useState("ligne");
   const [filters, setFilters] = useState({
@@ -60,6 +61,13 @@ export default function WimT() {
     setSelectedVehicle(v.id);
     setActiveTab("live");
     if (mapRef.current) mapRef.current.flyTo([v.lat, v.lon], 16, { duration: 0.8 });
+    // Sélectionner aussi la ligne entière
+    setSelectedLine({
+      short_name: v.route_short_name,
+      color: v.route_color,
+      text_color: v.route_text_color,
+      type: v.vehicleType,
+    });
     const gtfs = gtfsRef.current;
     if (!gtfs) return;
     const num = v.route_short_name;
@@ -79,6 +87,7 @@ export default function WimT() {
 
   const handleDeselect = useCallback(() => {
     setSelectedVehicle(null);
+    setSelectedLine(null);
     setSelectedRouteData(null);
   }, []);
 
@@ -102,6 +111,11 @@ export default function WimT() {
   }, {});
 
   const selectedVehicleObj = vehicules.find(v => v.id === selectedVehicle);
+
+  // Tous les véhicules de la ligne sélectionnée (les deux sens)
+  const lineVehicles = selectedLine
+    ? vehicules.filter(v => v.route_short_name === selectedLine.short_name)
+    : [];
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
@@ -166,6 +180,8 @@ export default function WimT() {
             sortedVehicles={sortedVehicles}
             selectedVehicle={selectedVehicle}
             selectedVehicleObj={selectedVehicleObj}
+            selectedLine={selectedLine}
+            lineVehicles={lineVehicles}
             selectedRouteData={selectedRouteData}
             filters={filters}
             mapRef={mapRef}
@@ -207,7 +223,7 @@ export default function WimT() {
 
       {/* Stats flottantes sur la carte (Live uniquement) */}
       {activeTab === "live" && (
-        <div style={{ position: "fixed", bottom: 64, right: 14, zIndex: 1000, display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ position: "fixed", bottom: selectedLine ? 176 : 64, right: 14, zIndex: 1000, display: "flex", flexDirection: "column", gap: 4, transition: "bottom 0.25s ease" }}>
           {[
             { label: "Trams", value: vehicules.filter(v => v.vehicleType === "tram").length,    color: "#3b8eea" },
             { label: "BRT",   value: vehicules.filter(v => v.vehicleType === "bustram").length, color: "#e87fa3" },

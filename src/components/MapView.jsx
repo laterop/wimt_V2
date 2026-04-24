@@ -11,7 +11,7 @@ function FlyTo({ position }) {
   return null;
 }
 
-export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
+export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
 
   const glassPanel = {
@@ -146,19 +146,22 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
 
 
       {/* Statut live */}
-      <div style={{ position: "absolute", left: 14, bottom: selectedVehicleObj ? 220 : 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, transition: "bottom 0.25s ease" }}>
+      <div style={{ position: "absolute", left: 14, bottom: selectedLine ? 170 : 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, transition: "bottom 0.25s ease" }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: error ? "#ef4444" : lastUpdate ? "#22c55e" : "#f59e0b", display: "block", flexShrink: 0 }}></span>
         <span style={{ fontSize: 10, color: textSub }}>
           {error ? "Hors ligne" : lastUpdate ? `${lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Connexion..."}
         </span>
       </div>
 
-      {/* Panneau de route (glisse depuis le bas quand un véhicule est sélectionné) */}
-      {selectedVehicleObj && (
+      {/* Panneau de route horizontal (glisse depuis le bas quand une ligne est sélectionnée) */}
+      {selectedLine && (
         <RoutePanel
           theme={theme}
-          vehicle={selectedVehicleObj}
-          nextStopInfo={nextStops?.get(selectedVehicleObj.id)}
+          selectedLine={selectedLine}
+          lineVehicles={lineVehicles || []}
+          nextStops={nextStops}
+          selectedVehicle={selectedVehicle}
+          onVehicleClick={onVehicleClick}
           onClose={onDeselect}
         />
       )}
