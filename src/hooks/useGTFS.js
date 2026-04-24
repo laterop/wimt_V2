@@ -46,7 +46,8 @@ export async function loadGTFS() {
     const num = String(f.properties.num_exploitation);
     const coords = f.geometry.coordinates.map(([lon, lat]) => [lat, lon]);
     if (!tramTraces.has(num)) tramTraces.set(num, { aller: [], retour: [] });
-    if (f.properties.sens?.toLowerCase().includes("retour") || f.properties.sens?.includes("V2")) {
+    // Ne se fier qu'au mot "Retour"/"Aller" — ignorer V1/V2 (la ligne 3 a "Aller - V2" et "Retour - V1")
+    if (f.properties.sens?.toLowerCase().includes("retour")) {
       tramTraces.get(num).retour = coords;
     } else {
       tramTraces.get(num).aller = coords;
