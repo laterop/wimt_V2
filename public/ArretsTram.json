@@ -1,0 +1,3086 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "MMM_MMM_ArretsTram",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8832257118, 43.6262637328 ]
+			},
+			"properties" : {
+				"description" : "Aiguelongue",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8886965609, 43.6267500194 ]
+			},
+			"properties" : {
+				"description" : "Saint-Lazare",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8891229606, 43.6036933446 ]
+			},
+			"properties" : {
+				"description" : "Voltaire",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8959593873, 43.5935096176 ]
+			},
+			"properties" : {
+				"description" : "La Rauze",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8950400811, 43.5994380263 ]
+			},
+			"properties" : {
+				"description" : "Georges Frêche - Hôtel de Ville",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8907992807, 43.5910101156 ]
+			},
+			"properties" : {
+				"description" : "Garcia Lorca",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8350683045, 43.6219479229 ]
+			},
+			"properties" : {
+				"description" : "Hôtel du Département",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8397281505, 43.6174658193 ]
+			},
+			"properties" : {
+				"description" : "Pergola",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8866948732, 43.608582556 ]
+			},
+			"properties" : {
+				"description" : "Antigone",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8901715651, 43.6089093897 ]
+			},
+			"properties" : {
+				"description" : "Léon Blum",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8939743186, 43.6073534759 ]
+			},
+			"properties" : {
+				"description" : "Place de l'Europe",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Gare Sud de France; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8949829634, 43.6125826558 ]
+			},
+			"properties" : {
+				"description" : "Pompignane",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8681119779, 43.6225913627 ]
+			},
+			"properties" : {
+				"description" : "Boutonnet - Cité des Arts",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Gare Sud de France; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8694990856, 43.6189911274 ]
+			},
+			"properties" : {
+				"description" : "Stade Philippidès",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Gare Sud de France; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8741078241, 43.6164877736 ]
+			},
+			"properties" : {
+				"description" : "Albert 1er - Saint-Charles",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Gare Sud de France; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8259151763, 43.6155513154 ]
+			},
+			"properties" : {
+				"description" : "Celleneuve",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8320736179, 43.6195351439 ]
+			},
+			"properties" : {
+				"description" : "Pilory",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8737682812, 43.6147674708 ]
+			},
+			"properties" : {
+				"description" : "Albert 1er - Jardin des Plantes",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens A; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8723544184, 43.6116519334 ]
+			},
+			"properties" : {
+				"description" : "Peyrou - Arc de Triomphe",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens A; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8736986117, 43.6079938426 ]
+			},
+			"properties" : {
+				"description" : "Saint-Guilhem - Courreau",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens A; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8797816321, 43.6084026376 ]
+			},
+			"properties" : {
+				"description" : "Comédie",
+				"lignes_passantes" : "1; 2",
+				"lignes_et_directions" : "1 Gare Sud de France; 2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8832472942, 43.6071359819 ]
+			},
+			"properties" : {
+				"description" : "Du Guesclin",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.876789176, 43.6063929127 ]
+			},
+			"properties" : {
+				"description" : "Observatoire",
+				"lignes_passantes" : "3; 4",
+				"lignes_et_directions" : "3 Juvignac; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8601880684, 43.5837970657 ]
+			},
+			"properties" : {
+				"description" : "Sabines",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8657068181, 43.5887758285 ]
+			},
+			"properties" : {
+				"description" : "Villeneuve d'Angoulême",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8664383899, 43.5924035534 ]
+			},
+			"properties" : {
+				"description" : "Croix d'Argent",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8760740089, 43.6030832144 ]
+			},
+			"properties" : {
+				"description" : "Rondelet",
+				"lignes_passantes" : "2; 4",
+				"lignes_et_directions" : "2 Jacou; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8681089175, 43.6085396212 ]
+			},
+			"properties" : {
+				"description" : "Plan Cabanes",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.874027628, 43.6055547762 ]
+			},
+			"properties" : {
+				"description" : "Gambetta",
+				"lignes_passantes" : "3; 5",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8726763553, 43.6062778456 ]
+			},
+			"properties" : {
+				"description" : "Gambetta - Chaptal",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8801778663, 43.6057594242 ]
+			},
+			"properties" : {
+				"description" : "Gare Saint-Roch",
+				"lignes_passantes" : "1; 2",
+				"lignes_et_directions" : "1 Gare Sud de France; 2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8842609479, 43.6036811562 ]
+			},
+			"properties" : {
+				"description" : "Place Carnot",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8797148414, 43.6052428277 ]
+			},
+			"properties" : {
+				"description" : "Gare Saint-Roch - République",
+				"lignes_passantes" : "3; 4",
+				"lignes_et_directions" : "3 Juvignac; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.833216933, 43.6345995748 ]
+			},
+			"properties" : {
+				"description" : "Malbosc - Domaine d'Ô",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.843104465, 43.6316190346 ]
+			},
+			"properties" : {
+				"description" : "Château d'Ô",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8484985818, 43.6346255619 ]
+			},
+			"properties" : {
+				"description" : "Occitanie Hôpitaux - Facultés",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8525970015, 43.6316528873 ]
+			},
+			"properties" : {
+				"description" : "Hôpital Lapeyronie",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8616179024, 43.6291331584 ]
+			},
+			"properties" : {
+				"description" : "Université Montpellier - Triolet",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.865714115, 43.6269960652 ]
+			},
+			"properties" : {
+				"description" : "Saint-Éloi",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8679012676, 43.5954851629 ]
+			},
+			"properties" : {
+				"description" : "Mas Drevon",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8731094688, 43.5936332233 ]
+			},
+			"properties" : {
+				"description" : "Lemasson",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8759894956, 43.5948966896 ]
+			},
+			"properties" : {
+				"description" : "Saint-Cléophas",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8756941297, 43.5993597264 ]
+			},
+			"properties" : {
+				"description" : "Nouveau Saint-Roch",
+				"lignes_passantes" : "2; 4",
+				"lignes_et_directions" : "2 Jacou; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8624558055, 43.6098645065 ]
+			},
+			"properties" : {
+				"description" : "Les Arceaux",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8882482642, 43.613984688 ]
+			},
+			"properties" : {
+				"description" : "Les Aubes",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8781447253, 43.6147250278 ]
+			},
+			"properties" : {
+				"description" : "Louis Blanc - Agora de la Danse",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Gare Sud de France; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.881823778, 43.6141961303 ]
+			},
+			"properties" : {
+				"description" : "Corum",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Gare Sud de France; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8835459556, 43.6169781286 ]
+			},
+			"properties" : {
+				"description" : "Beaux-Arts",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8841056214, 43.6204176976 ]
+			},
+			"properties" : {
+				"description" : "Jeu de Mail des Abbés",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8396667169, 43.6134851629 ]
+			},
+			"properties" : {
+				"description" : "Tonnelles",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8467225912, 43.6113688123 ]
+			},
+			"properties" : {
+				"description" : "Jules Guesde",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8549511759, 43.6102441951 ]
+			},
+			"properties" : {
+				"description" : "Astruc",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8211122606, 43.6306569601 ]
+			},
+			"properties" : {
+				"description" : "Saint-Paul",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8227226402, 43.6362777268 ]
+			},
+			"properties" : {
+				"description" : "Hauts de Massane",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8277292943, 43.6389768643 ]
+			},
+			"properties" : {
+				"description" : "Euromédecine",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8198069661, 43.6162806106 ]
+			},
+			"properties" : {
+				"description" : "Mosson",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France; 1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8175444287, 43.6275648083 ]
+			},
+			"properties" : {
+				"description" : "Halles de la Paillade",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8174131284, 43.621259462 ]
+			},
+			"properties" : {
+				"description" : "Stade de la Mosson",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8727713275, 43.6537048737 ]
+			},
+			"properties" : {
+				"description" : "Clapiers",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Clapiers"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.867322402, 43.6514023642 ]
+			},
+			"properties" : {
+				"description" : "Montferrier-sur-Lez",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montferrier-sur-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8235305956, 43.5929619201 ]
+			},
+			"properties" : {
+				"description" : "Grés de Montpellier",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8978038395, 43.6286058577 ]
+			},
+			"properties" : {
+				"description" : "Charles de Gaulle",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9026221275, 43.6301499635 ]
+			},
+			"properties" : {
+				"description" : "Clairval",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9090461947, 43.6314332195 ]
+			},
+			"properties" : {
+				"description" : "La Galine",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.915738166, 43.6327706269 ]
+			},
+			"properties" : {
+				"description" : "Centurions",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9222961607, 43.634219263 ]
+			},
+			"properties" : {
+				"description" : "Notre-Dame de Sablassou",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9248751075, 43.6385622677 ]
+			},
+			"properties" : {
+				"description" : "Aube Rouge",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9295222534, 43.6467378354 ]
+			},
+			"properties" : {
+				"description" : "Via Domitia",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9210541261, 43.6493208148 ]
+			},
+			"properties" : {
+				"description" : "Georges Pompidou",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9128184523, 43.6545203394 ]
+			},
+			"properties" : {
+				"description" : "Jacou",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou; 2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Jacou"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8100613411, 43.6174609517 ]
+			},
+			"properties" : {
+				"description" : "Juvignac",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac; 3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Juvignac"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9257606517, 43.5826320372 ]
+			},
+			"properties" : {
+				"description" : "Soriech",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9140486955, 43.5713462493 ]
+			},
+			"properties" : {
+				"description" : "Cougourlude",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9051631053, 43.5706789527 ]
+			},
+			"properties" : {
+				"description" : "Lattes Centre",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac; 3 Lattes Centre",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9351470787, 43.5780502478 ]
+			},
+			"properties" : {
+				"description" : "EcoPôle",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9457415796, 43.572865365 ]
+			},
+			"properties" : {
+				"description" : "Parc Expo",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.957325131, 43.5653929836 ]
+			},
+			"properties" : {
+				"description" : "Pérols Centre",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9636884163, 43.5578883366 ]
+			},
+			"properties" : {
+				"description" : "Pérols Étang de l'Or",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac; 3 Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.830670298, 43.5749234175 ]
+			},
+			"properties" : {
+				"description" : "Saint-Jean de Védas Centre",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou; 2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.837923102, 43.5708245784 ]
+			},
+			"properties" : {
+				"description" : "Saint-Jean le Sec",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8498996739, 43.5751713246 ]
+			},
+			"properties" : {
+				"description" : "Victoire 2",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8444621828, 43.5719984637 ]
+			},
+			"properties" : {
+				"description" : "La Condamine",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou; 2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9202169636, 43.5854020825 ]
+			},
+			"properties" : {
+				"description" : "Boirargues",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9221189245, 43.5970328829 ]
+			},
+			"properties" : {
+				"description" : "Gare Sud de France",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8948922016, 43.6042208502 ]
+			},
+			"properties" : {
+				"description" : "Rives du Lez",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Gare Sud de France; 4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8955330704, 43.6005959856 ]
+			},
+			"properties" : {
+				"description" : "Moularès (Hôtel de Ville)",
+				"lignes_passantes" : "1; 3",
+				"lignes_et_directions" : "1 Gare Sud de France; 3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8998769252, 43.6016624423 ]
+			},
+			"properties" : {
+				"description" : "Port Marianne",
+				"lignes_passantes" : "1; 3",
+				"lignes_et_directions" : "1 Gare Sud de France; 3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9040880301, 43.6027540194 ]
+			},
+			"properties" : {
+				"description" : "Mondial 98",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9099915515, 43.6033488917 ]
+			},
+			"properties" : {
+				"description" : "Millénaire",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9203917678, 43.6038013331 ]
+			},
+			"properties" : {
+				"description" : "Odysseum",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9157579842, 43.6037233974 ]
+			},
+			"properties" : {
+				"description" : "Place de France",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8939815862, 43.6039894357 ]
+			},
+			"properties" : {
+				"description" : "Rives du Lez - Consuls de Mer",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9034743336, 43.5977430813 ]
+			},
+			"properties" : {
+				"description" : "Pablo Picasso",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8803668727, 43.5921527588 ]
+			},
+			"properties" : {
+				"description" : "Saint-Martin - Le Jam",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8851154853, 43.5903445483 ]
+			},
+			"properties" : {
+				"description" : "Restanque",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8685703429, 43.6459557121 ]
+			},
+			"properties" : {
+				"description" : "Agropolis",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8611058296, 43.6442127032 ]
+			},
+			"properties" : {
+				"description" : "Plan des 4 Seigneurs",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8658693548, 43.6382014604 ]
+			},
+			"properties" : {
+				"description" : "CNRS - Zoo de Lunaret",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.867936302, 43.6339937835 ]
+			},
+			"properties" : {
+				"description" : "Pôle Chimie Balard",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8696142082, 43.6299659872 ]
+			},
+			"properties" : {
+				"description" : "Université Paul Valéry",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.866709543, 43.6271042663 ]
+			},
+			"properties" : {
+				"description" : "Saint-Éloi - Docteur Pezet",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8723410489, 43.6035146973 ]
+			},
+			"properties" : {
+				"description" : "Parc Clemenceau",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8680491787, 43.6012804523 ]
+			},
+			"properties" : {
+				"description" : "Place du 8 mai 1945",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8620342482, 43.6016755174 ]
+			},
+			"properties" : {
+				"description" : "Cité Créative - Parc Montcalm",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8545844255, 43.6026342458 ]
+			},
+			"properties" : {
+				"description" : "Chamberte - Les Roses",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8493331321, 43.6007156656 ]
+			},
+			"properties" : {
+				"description" : "Estanove",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8498857663, 43.595053515 ]
+			},
+			"properties" : {
+				"description" : "Yves du Manoir",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8476696124, 43.5914176503 ]
+			},
+			"properties" : {
+				"description" : "Ovalie",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.842270536, 43.593652166 ]
+			},
+			"properties" : {
+				"description" : "Parc Bagatelle",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8371636136, 43.5954409767 ]
+			},
+			"properties" : {
+				"description" : "Parc Font-Colombe",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8295065083, 43.5930414773 ]
+			},
+			"properties" : {
+				"description" : "Parc des Bouisses",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8744780651, 43.6050081021 ]
+			},
+			"properties" : {
+				"description" : "Gambetta - Saint-Denis",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8886787121, 43.6267763452 ]
+			},
+			"properties" : {
+				"description" : "Saint-Lazare",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8832180021, 43.6262989035 ]
+			},
+			"properties" : {
+				"description" : "Aiguelongue",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8950059986, 43.5994582948 ]
+			},
+			"properties" : {
+				"description" : "Georges Frêche - Hôtel de Ville",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8959565855, 43.5935429196 ]
+			},
+			"properties" : {
+				"description" : "La Rauze",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.89108409, 43.5912046954 ]
+			},
+			"properties" : {
+				"description" : "Garcia Lorca",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8911169326, 43.5911844465 ]
+			},
+			"properties" : {
+				"description" : "Garcia Lorca",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8908271297, 43.5909881404 ]
+			},
+			"properties" : {
+				"description" : "Garcia Lorca",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8391620932, 43.6182431903 ]
+			},
+			"properties" : {
+				"description" : "Pergola",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8350293332, 43.6219718347 ]
+			},
+			"properties" : {
+				"description" : "Hôtel du Département",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8939285864, 43.6073550327 ]
+			},
+			"properties" : {
+				"description" : "Place de l'Europe",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Mosson; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8901761791, 43.6089425852 ]
+			},
+			"properties" : {
+				"description" : "Léon Blum",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8866454055, 43.6085832638 ]
+			},
+			"properties" : {
+				"description" : "Antigone",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8949385622, 43.6125877896 ]
+			},
+			"properties" : {
+				"description" : "Pompignane",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8741431824, 43.6165142411 ]
+			},
+			"properties" : {
+				"description" : "Albert 1er - Saint-Charles",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Mosson; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8695387154, 43.6189923643 ]
+			},
+			"properties" : {
+				"description" : "Stade Philippidès",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Mosson; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8681518267, 43.6226006879 ]
+			},
+			"properties" : {
+				"description" : "Boutonnet - Cité des Arts",
+				"lignes_passantes" : "1; 5",
+				"lignes_et_directions" : "1 Mosson; 5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8258694116, 43.6155519448 ]
+			},
+			"properties" : {
+				"description" : "Celleneuve",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8737216196, 43.6147807189 ]
+			},
+			"properties" : {
+				"description" : "Albert 1er - Jardin des Plantes",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens B; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.872308707, 43.611654379 ]
+			},
+			"properties" : {
+				"description" : "Peyrou - Arc de Triomphe",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens B; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8798130584, 43.6083752202 ]
+			},
+			"properties" : {
+				"description" : "Comédie",
+				"lignes_passantes" : "1; 2",
+				"lignes_et_directions" : "1 Mosson; 2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8656684938, 43.5887763697 ]
+			},
+			"properties" : {
+				"description" : "Villeneuve d'Angoulême",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8601504806, 43.5837787167 ]
+			},
+			"properties" : {
+				"description" : "Sabines",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.876079754, 43.6031127982 ]
+			},
+			"properties" : {
+				"description" : "Rondelet",
+				"lignes_passantes" : "2; 4",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.868133113, 43.6085653491 ]
+			},
+			"properties" : {
+				"description" : "Plan Cabanes",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8736634525, 43.6079745649 ]
+			},
+			"properties" : {
+				"description" : "Saint-Guilhem - Courreau",
+				"lignes_passantes" : "4; 5",
+				"lignes_et_directions" : "4 Garcia Lorca sens B; 5 Grés de Montpellier",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8832878606, 43.6071264128 ]
+			},
+			"properties" : {
+				"description" : "Du Guesclin",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Gare Sud de France",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.880226338, 43.6057677229 ]
+			},
+			"properties" : {
+				"description" : "Gare Saint-Roch",
+				"lignes_passantes" : "1; 2",
+				"lignes_et_directions" : "1 Mosson; 2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8891176571, 43.6037257834 ]
+			},
+			"properties" : {
+				"description" : "Voltaire",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.884303576, 43.6037021225 ]
+			},
+			"properties" : {
+				"description" : "Place Carnot",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8767685897, 43.6063635394 ]
+			},
+			"properties" : {
+				"description" : "Observatoire",
+				"lignes_passantes" : "3; 4",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8796930672, 43.6052152697 ]
+			},
+			"properties" : {
+				"description" : "Gare Saint-Roch - République",
+				"lignes_passantes" : "3; 4",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8657467852, 43.6270144829 ]
+			},
+			"properties" : {
+				"description" : "Saint-Éloi",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8615912844, 43.6291560083 ]
+			},
+			"properties" : {
+				"description" : "Université Montpellier - Triolet",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8526248174, 43.6316749724 ]
+			},
+			"properties" : {
+				"description" : "Hôpital Lapeyronie",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.848534891, 43.6346412363 ]
+			},
+			"properties" : {
+				"description" : "Occitanie Hôpitaux - Facultés",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8430648513, 43.6316186867 ]
+			},
+			"properties" : {
+				"description" : "Château d'Ô",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8332410307, 43.6346217168 ]
+			},
+			"properties" : {
+				"description" : "Malbosc - Domaine d'Ô",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8664819036, 43.5924119274 ]
+			},
+			"properties" : {
+				"description" : "Croix d'Argent",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8756508045, 43.5993585441 ]
+			},
+			"properties" : {
+				"description" : "Nouveau Saint-Roch",
+				"lignes_passantes" : "2; 4",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8759491305, 43.5949134448 ]
+			},
+			"properties" : {
+				"description" : "Saint-Cléophas",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8731373214, 43.5936570991 ]
+			},
+			"properties" : {
+				"description" : "Lemasson",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8678573112, 43.5955064608 ]
+			},
+			"properties" : {
+				"description" : "Mas Drevon",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8615875086, 43.6100115851 ]
+			},
+			"properties" : {
+				"description" : "Les Arceaux",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8882461486, 43.6139523556 ]
+			},
+			"properties" : {
+				"description" : "Les Aubes",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8818048639, 43.6142287631 ]
+			},
+			"properties" : {
+				"description" : "Corum",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Mosson; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8781480473, 43.6147564445 ]
+			},
+			"properties" : {
+				"description" : "Louis Blanc - Agora de la Danse",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Mosson; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8820375955, 43.614461871 ]
+			},
+			"properties" : {
+				"description" : "Corum",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Jacou",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8840583013, 43.6204066871 ]
+			},
+			"properties" : {
+				"description" : "Jeu de Mail des Abbés",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8835093358, 43.6169966316 ]
+			},
+			"properties" : {
+				"description" : "Beaux-Arts",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8820489915, 43.6144257494 ]
+			},
+			"properties" : {
+				"description" : "Corum",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8549470182, 43.6102739193 ]
+			},
+			"properties" : {
+				"description" : "Astruc",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.846747992, 43.6113936286 ]
+			},
+			"properties" : {
+				"description" : "Jules Guesde",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8396650942, 43.6135175474 ]
+			},
+			"properties" : {
+				"description" : "Tonnelles",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8277052743, 43.6390050636 ]
+			},
+			"properties" : {
+				"description" : "Euromédecine",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8226805245, 43.6362765068 ]
+			},
+			"properties" : {
+				"description" : "Hauts de Massane",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8211130821, 43.630688556 ]
+			},
+			"properties" : {
+				"description" : "Saint-Paul",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8175048407, 43.6275653499 ]
+			},
+			"properties" : {
+				"description" : "Halles de la Paillade",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8173735208, 43.6212591039 ]
+			},
+			"properties" : {
+				"description" : "Stade de la Mosson",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8196128692, 43.6162392206 ]
+			},
+			"properties" : {
+				"description" : "Mosson",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8320444967, 43.6195571219 ]
+			},
+			"properties" : {
+				"description" : "Pilory",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.819711166, 43.6162603476 ]
+			},
+			"properties" : {
+				"description" : "Mosson",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8728041403, 43.6536819332 ]
+			},
+			"properties" : {
+				"description" : "Clapiers",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Clapiers"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8673314591, 43.6513707711 ]
+			},
+			"properties" : {
+				"description" : "Montferrier-sur-Lez",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montferrier-sur-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8235357719, 43.5929231945 ]
+			},
+			"properties" : {
+				"description" : "Grés de Montpellier",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9210178878, 43.6493087586 ]
+			},
+			"properties" : {
+				"description" : "Georges Pompidou",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9294334126, 43.6467040809 ]
+			},
+			"properties" : {
+				"description" : "Via Domitia",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9248352371, 43.6385529632 ]
+			},
+			"properties" : {
+				"description" : "Aube Rouge",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.922274664, 43.6342474468 ]
+			},
+			"properties" : {
+				"description" : "Notre-Dame de Sablassou",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9157265387, 43.632797766 ]
+			},
+			"properties" : {
+				"description" : "Centurions",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9090321153, 43.6314612927 ]
+			},
+			"properties" : {
+				"description" : "La Galine",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9026104958, 43.6301771012 ]
+			},
+			"properties" : {
+				"description" : "Clairval",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8977623913, 43.62862893 ]
+			},
+			"properties" : {
+				"description" : "Charles de Gaulle",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Castelnau-le-Lez"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9257849377, 43.582660447 ]
+			},
+			"properties" : {
+				"description" : "Soriech",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9140541067, 43.5713183026 ]
+			},
+			"properties" : {
+				"description" : "Cougourlude",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9574151742, 43.5654293905 ]
+			},
+			"properties" : {
+				"description" : "Pérols Centre",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9457631979, 43.5728866193 ]
+			},
+			"properties" : {
+				"description" : "Parc Expo",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9351738385, 43.5780786197 ]
+			},
+			"properties" : {
+				"description" : "EcoPôle",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Pérols"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8498585309, 43.5752051614 ]
+			},
+			"properties" : {
+				"description" : "Victoire 2",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8379348532, 43.5708954313 ]
+			},
+			"properties" : {
+				"description" : "Saint-Jean le Sec",
+				"lignes_passantes" : "2",
+				"lignes_et_directions" : "2 Saint-Jean de Védas Centre",
+				"station" : "Station de tramway",
+				"commune" : "Saint-Jean de Védas"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9201965378, 43.5853790088 ]
+			},
+			"properties" : {
+				"description" : "Boirargues",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Lattes Centre / Pérols Étang de l'Or",
+				"station" : "Station de tramway",
+				"commune" : "Lattes"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9221577531, 43.5970502934 ]
+			},
+			"properties" : {
+				"description" : "Gare Sud de France",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.920431612, 43.6038106381 ]
+			},
+			"properties" : {
+				"description" : "Odysseum",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9099886596, 43.6033785994 ]
+			},
+			"properties" : {
+				"description" : "Millénaire",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9040775908, 43.6027793419 ]
+			},
+			"properties" : {
+				"description" : "Mondial 98",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8993621531, 43.6015206461 ]
+			},
+			"properties" : {
+				"description" : "Port Marianne",
+				"lignes_passantes" : "1; 3",
+				"lignes_et_directions" : "1 Mosson; 3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8955708039, 43.6006188153 ]
+			},
+			"properties" : {
+				"description" : "Moularès (Hôtel de Ville)",
+				"lignes_passantes" : "1; 3",
+				"lignes_et_directions" : "1 Mosson; 3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8949343444, 43.6042238397 ]
+			},
+			"properties" : {
+				"description" : "Rives du Lez",
+				"lignes_passantes" : "1; 4",
+				"lignes_et_directions" : "1 Mosson; 4 Garcia Lorca sens B",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.9157476505, 43.6037523158 ]
+			},
+			"properties" : {
+				"description" : "Place de France",
+				"lignes_passantes" : "1",
+				"lignes_et_directions" : "1 Mosson",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8939775951, 43.6040245527 ]
+			},
+			"properties" : {
+				"description" : "Rives du Lez - Consuls de Mer",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.903637961, 43.5978009431 ]
+			},
+			"properties" : {
+				"description" : "Pablo Picasso",
+				"lignes_passantes" : "3",
+				"lignes_et_directions" : "3 Juvignac",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8851335734, 43.5903730555 ]
+			},
+			"properties" : {
+				"description" : "Restanque",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8803935161, 43.5921775496 ]
+			},
+			"properties" : {
+				"description" : "Saint-Martin - Le Jam",
+				"lignes_passantes" : "4",
+				"lignes_et_directions" : "4 Garcia Lorca sens A",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8295243497, 43.5930142631 ]
+			},
+			"properties" : {
+				"description" : "Parc des Bouisses",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8371381052, 43.5954116649 ]
+			},
+			"properties" : {
+				"description" : "Parc Font-Colombe",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8422572733, 43.5936181903 ]
+			},
+			"properties" : {
+				"description" : "Parc Bagatelle",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8476786477, 43.5913851623 ]
+			},
+			"properties" : {
+				"description" : "Ovalie",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8499318712, 43.5950663555 ]
+			},
+			"properties" : {
+				"description" : "Yves du Manoir",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8493533921, 43.6006866159 ]
+			},
+			"properties" : {
+				"description" : "Estanove",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8546107949, 43.6026024125 ]
+			},
+			"properties" : {
+				"description" : "Chamberte - Les Roses",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8620123877, 43.6016443619 ]
+			},
+			"properties" : {
+				"description" : "Cité Créative - Parc Montcalm",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8680842921, 43.6012520875 ]
+			},
+			"properties" : {
+				"description" : "Place du 8 mai 1945",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8717564785, 43.6031211526 ]
+			},
+			"properties" : {
+				"description" : "Parc Clemenceau",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8666335458, 43.6269929679 ]
+			},
+			"properties" : {
+				"description" : "Saint-Éloi - Docteur Pezet",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8696516608, 43.6299780432 ]
+			},
+			"properties" : {
+				"description" : "Université Paul Valéry",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8679770113, 43.6339887137 ]
+			},
+			"properties" : {
+				"description" : "Pôle Chimie Balard",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8659044582, 43.6382180456 ]
+			},
+			"properties" : {
+				"description" : "CNRS - Zoo de Lunaret",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8611424025, 43.644191512 ]
+			},
+			"properties" : {
+				"description" : "Plan des 4 Seigneurs",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.8686062065, 43.6459543062 ]
+			},
+			"properties" : {
+				"description" : "Agropolis",
+				"lignes_passantes" : "5",
+				"lignes_et_directions" : "5 Clapiers",
+				"station" : "Station de tramway",
+				"commune" : "Montpellier"
+			}
+		}
+	]
+}
