@@ -1,111 +1,116 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 
-// Génère le SVG HTML du marqueur avec flèche de direction
-function markerHtml({ bg, fg, label, size, isSelected, bearing, showDestLabel, headsign }) {
+// Convertit une couleur hex en rgb pour rgba()
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `${r},${g},${b}`;
+}
+
+// Génère un point sur un cercle à partir d'un angle (en degrés, 0=haut, sens horaire)
+function polar(cx, cy, r, angleDeg) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+}
+
+// Chemin SVG d'un arc de cercle (secteur angulaire)
+// cx, cy : centre ; r : rayon ; startDeg, endDeg : angles absolus
+function arcPath(cx, cy, r, startDeg, endDeg) {
+  const [x1, y1] = polar(cx, cy, r, startDeg);
+  const [x2, y2] = polar(cx, cy, r, endDeg);
+  const large = endDeg - startDeg > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+}
+
+function buildIcon({ bg, fg, label, dotSize, isSelected, bearing }) {
   const hasBearing = bearing !== null && bearing !== undefined && !isNaN(bearing);
-  const arrowSize = Math.round(size * 0.55);
+  const rgb = hexToRgb(bg);
 
-  // Flèche SVG orientée selon le bearing (0° = nord, tourne dans le sens horaire)
-  const arrowSvg = hasBearing ? `
-    <div style="
-      position:absolute;
-      top:${-(arrowSize * 0.55)}px;
-      left:50%;
-      transform:translateX(-50%) rotate(${bearing}deg);
-      transform-origin:bottom center;
-      width:${arrowSize}px;
-      height:${arrowSize}px;
-      pointer-events:none;
-    ">
-      <svg viewBox="0 0 12 12" width="${arrowSize}" height="${arrowSize}">
-        <polygon points="6,0 10,10 6,7.5 2,10"
-          fill="${bg}"
-          stroke="white"
-          stroke-width="1.2"
-          stroke-linejoin="round"/>
-      </svg>
-    </div>` : "";
+  // Dimensions du SVG global
+  // Le cône s'étend vers l'avant : on fait un SVG assez grand pour contenir le tout
+  const coneR    = dotSize * 2.2;         // rayon du cône
+  const coneSpan = 70;                    // demi-angle du cône (140° total)
+  const pad      = coneR + 2;             // padding autour du dot
+  const svgSize  = dotSize + pad * 2;     // taille totale du SVG
+  const cx       = svgSize / 2;
+  const cy       = svgSize / 2;
+  const r        = dotSize / 2;           // rayon du cercle du marqueur
+  const fontSize = dotSize <= 22 ? 8 : 10;
+  const ringW    = isSelected ? 2.5 : 1.8;
 
-  // Label destination sous le marqueur (uniquement si sélectionné)
-  const destLabel = showDestLabel && headsign ? `
-    <div style="
-      position:absolute;
-      top:${size + 4}px;
-      left:50%;
-      transform:translateX(-50%);
-      white-space:nowrap;
-      background:${bg};
-      color:${fg};
-      font-size:9px;
-      font-weight:700;
-      font-family:'Inter',system-ui,sans-serif;
-      padding:2px 6px;
-      border-radius:6px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.3);
-      pointer-events:none;
-      max-width:100px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    ">▶ ${headsign}</div>` : "";
+  // Cône de vision : arc orienté selon bearing, avec dégradé radial
+  const coneHtml = hasBearing ? (() => {
+    const startDeg = bearing - coneSpan;
+    const endDeg   = bearing + coneSpan;
+    const path     = arcPath(cx, cy, coneR, startDeg, endDeg);
+    // Identifiant unique pour le gradient (plusieurs markers sur la page)
+    const gid = `cg_${Math.round(bearing)}_${label}`.replace(/[^a-zA-Z0-9_]/g, "");
+    return `
+      <defs>
+        <radialGradient id="${gid}" cx="50%" cy="50%" r="50%">
+          <stop offset="30%" stop-color="rgb(${rgb})" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="rgb(${rgb})" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <path d="${path}" fill="url(#${gid})" stroke="none"/>`;
+  })() : "";
 
-  return `
-    <div style="position:relative;width:${size}px;height:${size}px;">
-      ${arrowSvg}
-      <div style="
-        width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.28)}px;
-        background:${bg};color:${fg};
-        border:${isSelected ? "2.5px" : "2px"} solid rgba(255,255,255,${isSelected ? 1 : 0.88});
-        box-shadow:0 0 0 ${isSelected ? 3 : 0}px ${bg}55, 0 2px 8px rgba(0,0,0,0.38);
-        display:flex;align-items:center;justify-content:center;
-        font-family:'Inter',system-ui,sans-serif;
-        font-size:${size <= 24 ? 9 : 11}px;font-weight:700;
-        cursor:pointer;
-        position:relative;z-index:1;
-      ">${label}</div>
-      ${destLabel}
-    </div>`;
+  // Cercle du marqueur
+  const ring = isSelected
+    ? `<circle cx="${cx}" cy="${cy}" r="${r + 3.5}" fill="white" opacity="0.25"/>`
+    : "";
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="${svgSize}" height="${svgSize}"
+         viewBox="0 0 ${svgSize} ${svgSize}"
+         style="overflow:visible;display:block;">
+      ${coneHtml}
+      ${ring}
+      <circle cx="${cx}" cy="${cy}" r="${r}"
+        fill="${bg}"
+        stroke="white"
+        stroke-width="${ringW}"/>
+      <text x="${cx}" y="${cy}"
+        text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,sans-serif"
+        font-size="${fontSize}" font-weight="700"
+        fill="${fg}">${label}</text>
+    </svg>`;
+
+  return L.divIcon({
+    className: "",
+    html: svg,
+    iconSize:   [svgSize, svgSize],
+    iconAnchor: [cx, cy],   // ancré sur le centre du cercle
+  });
 }
 
 export default function VehicleMarker({ v, isSelected, onClick, isDark }) {
-  const bg    = `#${v.route_color}`;
+  const bg    = `#${v.route_color || "0074c9"}`;
   const fg    = `#${v.route_text_color || "ffffff"}`;
-  const size  = isSelected ? 32 : 24;
-  const label = v.route_short_name.length > 2
-    ? v.route_short_name.slice(0, 2)
+  const label = v.route_short_name.length > 3
+    ? v.route_short_name.slice(0, 3)
     : v.route_short_name;
+  const dotSize = isSelected ? 30 : 22;
 
-  const arrowOffset = v.bearing !== null ? Math.round(size * 0.55 * 0.55) + 2 : 0;
-  const totalH = size + arrowOffset + (isSelected ? 22 : 0); // extra pour label dest
-  const totalW = isSelected ? 110 : size + 10; // extra pour label dest
-
-  const html = markerHtml({
-    bg, fg, label, size, isSelected,
+  const icon = buildIcon({
+    bg, fg, label, dotSize, isSelected,
     bearing: v.bearing,
-    showDestLabel: isSelected,
-    headsign: v.headsign,
-  });
-
-  const icon = L.divIcon({
-    className: "",
-    html,
-    iconSize:   [totalW, totalH],
-    iconAnchor: [totalW / 2, size / 2 + arrowOffset],
   });
 
   const panelBg = isDark ? "#16181f" : "#ffffff";
-  const border  = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const text    = isDark ? "#f0f2f7" : "#0f172a";
   const sub     = isDark ? "#7a7f94" : "#64748b";
-
-  // Direction lisible depuis direction_id
-  const dirLabel = v.direction_id === 0 || v.direction_id === "0" ? "Aller" : "Retour";
+  const dirLabel = (v.direction_id === 0 || v.direction_id === "0") ? "Aller" : "Retour";
 
   return (
     <Marker position={[v.lat, v.lon]} icon={icon} eventHandlers={{ click: onClick }}>
       <Popup>
         <div style={{ fontFamily: "'Inter',system-ui,sans-serif", minWidth: 190, background: panelBg, borderRadius: 12, overflow: "hidden" }}>
-          {/* En-tête coloré */}
           <div style={{ background: bg, color: fg, padding: "10px 14px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
@@ -119,33 +124,21 @@ export default function VehicleMarker({ v, isSelected, onClick, isDark }) {
           </div>
 
           <div style={{ padding: "10px 14px" }}>
-            {/* Destination */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 11, color: sub }}>Direction</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: text, flex: 1 }}>{v.headsign}</span>
             </div>
 
-            {/* Sens aller/retour */}
             <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 10, color: fg, background: bg, borderRadius: 6, padding: "2px 7px", fontWeight: 600 }}>
                 {dirLabel}
               </span>
-              {v.bearing !== null && (
-                <span style={{ fontSize: 10, color: sub, display: "flex", alignItems: "center", gap: 3 }}>
-                  <svg viewBox="0 0 12 12" width="9" height="9">
-                    <polygon points="6,0 10,10 6,7.5 2,10" fill={sub}/>
-                  </svg>
-                  {Math.round(v.bearing)}°
-                </span>
-              )}
             </div>
 
-            {/* Ligne longue */}
             {v.route_long_name && (
               <div style={{ fontSize: 10, color: sub, marginBottom: 8, lineHeight: 1.4 }}>{v.route_long_name}</div>
             )}
 
-            {/* Statut vitesse */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: sub }}>
               <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: (v.speed ?? 0) > 0 ? "#22c55e" : "#f59e0b", flexShrink: 0 }}></span>
               {(v.speed ?? 0) > 0 ? `${Math.round(v.speed)} km/h` : "À l'arrêt"}
