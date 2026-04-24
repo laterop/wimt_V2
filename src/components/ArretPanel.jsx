@@ -45,31 +45,35 @@ function isServiceActive(serviceId) {
 }
 
 // Trouve le véhicule le plus probable pour un passage donné.
-// Stratégie : même ligne + même direction + le plus proche de l'arrêt (côté approche).
-// Les véhicules qui ont déjà dépassé l'arrêt sont pénalisés.
-function findVehicle(vehicules, passage, stopLat, stopLon) {
+// Utilise le prochain arrêt calculé (nextStops Map) pour chaque véhicule :
+// un véhicule dont le prochain arrêt est notre stop_id est un candidat direct.
+// Parmi les candidats, on trie par minutes restantes.
+function findVehicle(vehicules, nextStops, passage, stopId, stopLat, stopLon) {
   const candidates = vehicules.filter(v =>
     v.route_short_name === passage.name &&
     String(v.direction_id) === String(passage.dir)
   );
   if (candidates.length === 0) return null;
 
-  // Scoring : distance à l'arrêt (plus petit = mieux), pénalité si le véhicule a probablement dépassé
-  const scored = candidates.map(v => {
-    const dist = distKm(v.lat, v.lon, stopLat, stopLon);
-    // Bearing du véhicule vers l'arrêt (approximatif pour pénaliser les dépassements)
-    const dLon = (stopLon - v.lon) * Math.cos((v.lat * Math.PI) / 180);
-    const dLat = stopLat - v.lat;
-    const bearingToStop = (Math.atan2(dLon, dLat) * 180 / Math.PI + 360) % 360;
-    const vBearing = v.bearing || 0;
-    const angleDiff = Math.abs(((bearingToStop - vBearing + 540) % 360) - 180);
-    // Si le véhicule se dirige vers l'arrêt (angleDiff < 90°), bonus
-    const penalty = angleDiff > 90 ? dist * 2 : 0;
-    return { v, score: dist + penalty };
+  // Candidats dont le prochain arrêt calculé = notre arrêt
+  const exact = candidates.filter(v => {
+    const ns = nextStops.get(v.id);
+    return ns && String(ns.stopId) === String(stopId);
   });
 
-  scored.sort((a, b) => a.score - b.score);
-  return scored[0].v;
+  if (exact.length > 0) {
+    // Parmi ceux dont le prochain stop = notre arrêt, prendre le plus proche
+    return exact.reduce((best, v) => {
+      const ns = nextStops.get(v.id);
+      const bestNs = nextStops.get(best.id);
+      return (ns?.distM ?? Infinity) < (bestNs?.distM ?? Infinity) ? v : best;
+    });
+  }
+
+  // Fallback : aucun véhicule n'a notre arrêt comme prochain stop.
+  // Le passage est peut-être encore loin, ou le véhicule n'est pas en service.
+  // On retourne null pour ne pas afficher un mauvais résultat.
+  return null;
 }
 
 const TYPE_CONFIG = {
@@ -92,7 +96,7 @@ const POPULAR = ["Corum", "Comédie", "Gare Saint-Roch", "Mosson", "Odysseum", "
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function ArretPanel({ theme: t, vehicules = [], onTrackVehicle }) {
+export default function ArretPanel({ theme: t, vehicules = [], nextStops = new Map(), onTrackVehicle }) {
   const [query, setQuery]               = useState("");
   const [allMeta, setAllMeta]           = useState([]);     // [{name, entries:[{id,lat,lon,types}]}]
   const [suggestions, setSuggestions]   = useState([]);
@@ -363,8 +367,9 @@ export default function ArretPanel({ theme: t, vehicules = [], onTrackVehicle })
             ) : (
               passages.map((p, i) => {
                 const matched = selectedEntry
-                  ? findVehicle(vehicules, p, selectedEntry.lat, selectedEntry.lon)
+                  ? findVehicle(vehicules, nextStops, p, selectedEntry.id, selectedEntry.lat, selectedEntry.lon)
                   : null;
+                const ns = matched ? nextStops.get(matched.id) : null;
                 return (
                   <PassageRow
                     key={p.key + i}
@@ -372,6 +377,7 @@ export default function ArretPanel({ theme: t, vehicules = [], onTrackVehicle })
                     t={t}
                     isFirst={i === 0}
                     matchedVehicle={matched}
+                    nextStopInfo={ns}
                     onTrack={matched && onTrackVehicle ? () => onTrackVehicle(matched) : null}
                   />
                 );
@@ -386,11 +392,25 @@ export default function ArretPanel({ theme: t, vehicules = [], onTrackVehicle })
 
 // ─── Ligne de passage ─────────────────────────────────────────────────────────
 
-function PassageRow({ p, t, isFirst, matchedVehicle, onTrack }) {
+function PassageRow({ p, t, isFirst, matchedVehicle, nextStopInfo, onTrack }) {
   const color = p.color ? `#${p.color}` : "#0074c9";
   const mins  = p.mins;
   const minLabel = mins <= 0 ? "Imm." : `${mins} min`;
   const minColor = mins <= 1 ? "#22c55e" : mins <= 4 ? "#f59e0b" : t.accent;
+
+  // Description de la position du véhicule
+  let vehicleStatus = null;
+  if (matchedVehicle && nextStopInfo) {
+    if (nextStopInfo.isAtStop) {
+      vehicleStatus = `À l'arrêt « ${nextStopInfo.currentStop} »`;
+    } else {
+      const distM = Math.round(nextStopInfo.distM);
+      const distLabel = distM >= 1000
+        ? `${(distM / 1000).toFixed(1)} km`
+        : `${distM} m`;
+      vehicleStatus = `À ${distLabel} de cet arrêt`;
+    }
+  }
 
   return (
     <div style={{ borderBottom: `0.5px solid ${t.border}`, background: isFirst ? `${color}08` : t.panelBg }}>
@@ -410,28 +430,43 @@ function PassageRow({ p, t, isFirst, matchedVehicle, onTrack }) {
         </div>
       </div>
 
-      {/* Bouton "Voir sur la carte" si un véhicule est localisé */}
-      {onTrack && (
+      {/* Bandeau véhicule localisé */}
+      {onTrack ? (
         <button
           onClick={onTrack}
           style={{
             width: "100%", padding: "7px 16px 9px",
-            background: "none", border: "none", borderTop: `0.5px solid ${color}22`,
+            background: `${color}0a`, border: "none", borderTop: `0.5px solid ${color}22`,
             cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
             fontFamily: "'Inter',system-ui,sans-serif", textAlign: "left",
           }}
         >
-          <span style={{ fontSize: 14 }}>📍</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color }}>Voir ce véhicule sur la carte</span>
-          {matchedVehicle.speed > 0 && (
-            <span style={{ fontSize: 10, color: t.textHint, marginLeft: "auto" }}>
-              {Math.round(matchedVehicle.speed)} km/h
-            </span>
-          )}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" style={{ marginLeft: matchedVehicle.speed > 0 ? 0 : "auto" }}>
+          <span style={{ fontSize: 13 }}>
+            {nextStopInfo?.isAtStop ? "🚏" : "🚃"}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color }}>
+              {nextStopInfo?.isAtStop ? "En cours de chargement" : "En approche"}
+            </div>
+            {vehicleStatus && (
+              <div style={{ fontSize: 10, color: t.textHint, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {vehicleStatus}
+                {matchedVehicle.speed > 1 ? ` · ${Math.round(matchedVehicle.speed)} km/h` : ""}
+              </div>
+            )}
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" style={{ flexShrink: 0 }}>
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
+      ) : (
+        // Aucun véhicule localisé : pas encore en service
+        mins > 0 && mins <= 60 && (
+          <div style={{ padding: "5px 16px 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11 }}>⏳</span>
+            <span style={{ fontSize: 10, color: t.textHint }}>Véhicule pas encore en service</span>
+          </div>
+        )
       )}
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 
 import { useVehicles } from "./hooks/useVehicles";
+import { useNextStop } from "./hooks/useNextStop";
 import { getTheme } from "./theme";
 import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
@@ -33,6 +34,7 @@ const TABS = [
 
 export default function WimT() {
   const { vehicules, lastUpdate, error, gtfsRef } = useVehicles();
+  const nextStops = useNextStop(vehicules);
 
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
   const [activeTab, setActiveTab] = useState("live");
@@ -142,6 +144,7 @@ export default function WimT() {
             <ArretPanel
               theme={t}
               vehicules={vehicules}
+              nextStops={nextStops}
               onTrackVehicle={(v) => {
                 setActiveTab("live");
                 handleVehicleClick(v);
