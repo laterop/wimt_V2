@@ -1,32 +1,18 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import Papa from "papaparse";
 
-// ─── Cache stops ──────────────────────────────────────────────────────────────
+// ─── Cache ────────────────────────────────────────────────────────────────────
 
-let stopsCache = null;
-async function loadStops() {
-  if (stopsCache) return stopsCache;
-  const raw = await fetch("/stops.txt").then(r => r.text());
-  const text = raw.replace(/^\uFEFF/, "").replace(/\r/g, "");
-  const stops = [];
-  Papa.parse(text, {
-    header: true,
-    skipEmptyLines: true,
-    step: ({ data: d }) => {
-      const lat = parseFloat(d.stop_lat);
-      const lon = parseFloat(d.stop_lon);
-      if (d.stop_name && !isNaN(lat) && !isNaN(lon)) {
-        stops.push({ id: (d.stop_id || "").trim(), name: d.stop_name.trim(), lat, lon });
-      }
-    },
-  });
-  stopsCache = stops;
-  return stops;
+let metaCache = null;
+async function loadMeta() {
+  if (metaCache) return metaCache;
+  const data = await fetch("/stop-meta.json").then(r => r.json());
+  metaCache = data;
+  return data;
 }
 
-// ─── Utilitaires ─────────────────────────────────────────────────────────────
+// ─── Utilitaires ──────────────────────────────────────────────────────────────
 
 function distKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -37,7 +23,6 @@ function distKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Convertit "HH:MM:SS" (peut dépasser 24h en GTFS) en secondes depuis minuit aujourd'hui
 function depToTimestamp(dep) {
   const parts = dep.split(":");
   if (parts.length < 2) return null;
@@ -45,33 +30,27 @@ function depToTimestamp(dep) {
   const m = parseInt(parts[1], 10);
   const s = parseInt(parts[2] || "0", 10);
   const now = new Date();
-  const midnightToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
-  return midnightToday + h * 3600 + m * 60 + s;
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+  return midnight + h * 3600 + m * 60 + s;
 }
 
-// Filtre les service_id actifs selon le jour courant (sans calendar.txt)
-// Les service_id TAM contiennent "LAV" (semaine), "SAM" (samedi), "DIM" (dimanche)
-// et les codes courts 23_1 à 23_8 (dont 23_7 = samedi, 23_8 = dimanche selon convention)
 function isServiceActive(serviceId) {
-  const dow = new Date().getDay(); // 0=dim, 1=lun, ..., 6=sam
+  const dow = new Date().getDay();
   const id = (serviceId || "").toUpperCase();
-
-  if (id.includes("LAV") || id.includes("SEMAINE")) {
-    return dow >= 1 && dow <= 5; // lun-ven
-  }
-  if (id.includes("RED")) {
-    return dow >= 1 && dow <= 5; // semaine réduit
-  }
-  if (id.includes("SAM") || id.includes("SAMEDI")) {
-    return dow === 6;
-  }
-  if (id.includes("DIM") || id.includes("DIMANCHE")) {
-    return dow === 0;
-  }
-  // Codes courts 23_x : convention TAM approximative
-  // Sans calendar.txt, on accepte tous les codes courts (meilleur que rien)
+  if (id.includes("LAV") || id.includes("SEMAINE")) return dow >= 1 && dow <= 5;
+  if (id.includes("RED")) return dow >= 1 && dow <= 5;
+  if (id.includes("SAM") || id.includes("SAMEDI")) return dow === 6;
+  if (id.includes("DIM") || id.includes("DIMANCHE")) return dow === 0;
   return true;
 }
+
+const TYPE_CONFIG = {
+  tram: { label: "Tram", icon: "🚊", color: "#3b8eea", bg: "rgba(59,142,234,0.12)" },
+  brt:  { label: "BRT",  icon: "🚌", color: "#e87fa3", bg: "rgba(232,127,163,0.12)" },
+  bus:  { label: "Bus",  icon: "🚌", color: "#fbbf24", bg: "rgba(251,191,36,0.12)" },
+};
+
+const TYPE_ORDER = ["tram", "brt", "bus"];
 
 function FlyTo({ position }) {
   const map = useMap();
@@ -87,74 +66,59 @@ const POPULAR = ["Corum", "Comédie", "Gare Saint-Roch", "Mosson", "Odysseum", "
 
 export default function ArretPanel({ theme: t }) {
   const [query, setQuery]               = useState("");
-  const [allStops, setAllStops]         = useState([]);
+  const [allMeta, setAllMeta]           = useState([]);     // [{name, entries:[{id,lat,lon,types}]}]
   const [suggestions, setSuggestions]   = useState([]);
   const [showDrop, setShowDrop]         = useState(false);
-  const [selectedStop, setSelectedStop] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null); // une entrée du meta (nom + entries)
+  const [selectedEntry, setSelectedEntry] = useState(null); // {id, lat, lon, types}
+  const [activeType, setActiveType]     = useState(null);   // "tram"|"brt"|"bus" sélectionné
   const [passages, setPassages]         = useState([]);
   const [loading, setLoading]           = useState(false);
   const [loadedAt, setLoadedAt]         = useState(null);
   const mapRef = useRef(null);
 
-  // Charger stops au montage
-  useEffect(() => { loadStops().then(setAllStops); }, []);
+  useEffect(() => { loadMeta().then(setAllMeta); }, []);
 
   // Suggestions
   useEffect(() => {
     const q = query.trim().toLowerCase();
     if (q.length < 2) { setSuggestions([]); return; }
-    const seen = new Set();
-    const res = allStops.filter(s => {
-      const k = s.name.toLowerCase();
-      if (!k.includes(q) || seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    }).slice(0, 8);
+    const res = allMeta.filter(m => m.name.toLowerCase().includes(q)).slice(0, 8);
     setSuggestions(res);
-  }, [query, allStops]);
+  }, [query, allMeta]);
 
-  // Charge les passages pour un arrêt depuis /stops/{id}.json
-  const fetchPassages = useCallback(async (stop) => {
-    if (!stop) return;
+  // Charger les passages pour un stop_id
+  const fetchPassages = useCallback(async (stopId) => {
+    if (!stopId) return;
     setLoading(true);
     try {
-      const data = await fetch(`/stops/${stop.id}.json`).then(r => {
+      const data = await fetch(`/stops/${stopId}.json`).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       });
-
       const now = Math.floor(Date.now() / 1000);
       const results = [];
-
       for (const p of data) {
-        // Filtrer par service actif
         if (!isServiceActive(p.s)) continue;
-
         const ts = depToTimestamp(p.dep);
         if (ts == null) continue;
-
         const mins = Math.round((ts - now) / 60);
         if (mins < -1 || mins > 90) continue;
-
         results.push({
-          key:     `${p.dep}|${p.n}|${p.h}`,
-          ts,
-          mins,
-          dep:     p.dep.slice(0, 5), // "HH:MM"
-          name:    p.n,               // route_short_name
-          headsign:p.h,               // trip_headsign
-          color:   p.c,               // route_color (hex sans #)
-          dir:     p.d,               // direction_id
+          key:      `${p.dep}|${p.n}|${p.h}`,
+          ts, mins,
+          dep:      p.dep.slice(0, 5),
+          name:     p.n,
+          headsign: p.h,
+          color:    p.c,
+          dir:      p.d,
         });
       }
-
-      // Dédoublonnage sur (dep + nom + headsign) et tri
       const seen = new Set();
       const deduped = results
         .filter(r => { if (seen.has(r.key)) return false; seen.add(r.key); return true; })
         .sort((a, b) => a.ts - b.ts)
         .slice(0, 15);
-
       setPassages(deduped);
       setLoadedAt(new Date());
     } catch (err) {
@@ -164,34 +128,74 @@ export default function ArretPanel({ theme: t }) {
     setLoading(false);
   }, []);
 
-  // Refresh toutes les 30s
   useEffect(() => {
-    if (!selectedStop) return;
-    fetchPassages(selectedStop);
-    const timer = setInterval(() => fetchPassages(selectedStop), 30000);
+    if (!selectedEntry) return;
+    fetchPassages(selectedEntry.id);
+    const timer = setInterval(() => fetchPassages(selectedEntry.id), 30000);
     return () => clearInterval(timer);
-  }, [selectedStop, fetchPassages]);
+  }, [selectedEntry, fetchPassages]);
 
-  const selectStop = (stop) => {
-    setSelectedStop(stop);
-    setQuery(stop.name);
+  // Sélectionner un groupe depuis la recherche
+  const selectGroup = (group) => {
+    setSelectedGroup(group);
+    setQuery(group.name);
     setSuggestions([]);
     setShowDrop(false);
     setPassages([]);
+    setLoadedAt(null);
+
+    // Calculer les types disponibles
+    const typesSet = new Set(group.entries.flatMap(e => e.types));
+    const availTypes = TYPE_ORDER.filter(t => typesSet.has(t));
+
+    // Auto-sélectionner le premier type disponible
+    const firstType = availTypes[0] || null;
+    setActiveType(firstType);
+
+    // Auto-sélectionner le premier stop du type choisi
+    if (firstType) {
+      const entry = group.entries.find(e => e.types.includes(firstType));
+      setSelectedEntry(entry || group.entries[0]);
+    } else {
+      setSelectedEntry(group.entries[0]);
+    }
+  };
+
+  // Changer de type pour un même nom d'arrêt
+  const switchType = (type) => {
+    setActiveType(type);
+    setPassages([]);
+    setLoadedAt(null);
+    const entry = selectedGroup.entries.find(e => e.types.includes(type));
+    if (entry) setSelectedEntry(entry);
   };
 
   const selectByName = (name) => {
     const q = name.toLowerCase();
-    const match = allStops.find(s => s.name.toLowerCase() === q)
-      || allStops.find(s => s.name.toLowerCase().includes(q));
-    if (match) selectStop(match);
+    const match = allMeta.find(m => m.name.toLowerCase() === q)
+      || allMeta.find(m => m.name.toLowerCase().includes(q));
+    if (match) selectGroup(match);
     else { setQuery(name); setShowDrop(true); }
   };
 
-  const nearbyStops = useMemo(() => {
-    if (!selectedStop) return [];
-    return allStops.filter(s => s.id !== selectedStop.id && distKm(s.lat, s.lon, selectedStop.lat, selectedStop.lon) < 0.35);
-  }, [selectedStop, allStops]);
+  // Types disponibles pour le groupe courant
+  const availableTypes = useMemo(() => {
+    if (!selectedGroup) return [];
+    const typesSet = new Set(selectedGroup.entries.flatMap(e => e.types));
+    return TYPE_ORDER.filter(t => typesSet.has(t));
+  }, [selectedGroup]);
+
+  // Stops proches (même nom, autre type)
+  const nearbyEntries = useMemo(() => {
+    if (!selectedEntry || !selectedGroup) return [];
+    return selectedGroup.entries.filter(e => e.id !== selectedEntry.id);
+  }, [selectedEntry, selectedGroup]);
+
+  // Tous les stops du même nom pour la carte
+  const allEntries = useMemo(() => {
+    if (!selectedGroup) return [];
+    return selectedGroup.entries;
+  }, [selectedGroup]);
 
   const stopIcon = L.divIcon({
     className: "",
@@ -222,7 +226,7 @@ export default function ArretPanel({ theme: t }) {
           {query && (
             <button
               onMouseDown={e => e.preventDefault()}
-              onClick={() => { setQuery(""); setSelectedStop(null); setSuggestions([]); setPassages([]); setShowDrop(false); }}
+              onClick={() => { setQuery(""); setSelectedGroup(null); setSelectedEntry(null); setPassages([]); setShowDrop(false); }}
               style={{ background: "none", border: "none", cursor: "pointer", color: t.textHint, fontSize: 20, lineHeight: 1, padding: 0 }}
             >×</button>
           )}
@@ -230,57 +234,92 @@ export default function ArretPanel({ theme: t }) {
 
         {showSugg && (
           <div style={{ position: "absolute", top: "calc(100% - 2px)", left: 14, right: 14, background: t.panelBg, borderRadius: "0 0 14px 14px", border: `0.5px solid ${t.borderStrong}`, borderTop: "none", boxShadow: "0 12px 32px rgba(0,0,0,0.18)", zIndex: 200, overflow: "hidden" }}>
-            {suggestions.map((s, i) => (
-              <button key={s.id}
-                onMouseDown={e => e.preventDefault()}
-                onClick={() => selectStop(s)}
-                style={{ width: "100%", padding: "11px 16px", background: "none", border: "none", borderTop: i > 0 ? `0.5px solid ${t.border}` : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, textAlign: "left", fontFamily: "'Inter',system-ui,sans-serif" }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill={t.accent} stroke="none">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                <span style={{ fontSize: 13, color: t.text, fontWeight: 500 }}>{s.name}</span>
-              </button>
-            ))}
+            {suggestions.map((s, i) => {
+              const typesSet = new Set(s.entries.flatMap(e => e.types));
+              const types = TYPE_ORDER.filter(t => typesSet.has(t));
+              return (
+                <button key={s.name + i}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => selectGroup(s)}
+                  style={{ width: "100%", padding: "10px 16px", background: "none", border: "none", borderTop: i > 0 ? `0.5px solid ${t.border}` : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, textAlign: "left", fontFamily: "'Inter',system-ui,sans-serif" }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill={t.accent} stroke="none">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                  <span style={{ fontSize: 13, color: t.text, fontWeight: 500, flex: 1 }}>{s.name}</span>
+                  <span style={{ display: "flex", gap: 4 }}>
+                    {types.map(type => {
+                      const tc = TYPE_CONFIG[type];
+                      return (
+                        <span key={type} style={{ fontSize: 10, fontWeight: 600, color: tc.color, background: tc.bg, borderRadius: 6, padding: "2px 6px" }}>
+                          {tc.label}
+                        </span>
+                      );
+                    })}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* ── Contenu ── */}
-      {!selectedStop ? (
+      {!selectedGroup ? (
         <EmptyState t={t} onSelect={selectByName} />
       ) : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
+          {/* Sélecteur de type (tram / bus) si plusieurs types disponibles */}
+          {availableTypes.length > 1 && (
+            <div style={{ display: "flex", gap: 6, padding: "10px 14px 6px", background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, flexShrink: 0 }}>
+              {availableTypes.map(type => {
+                const tc = TYPE_CONFIG[type];
+                const isActive = activeType === type;
+                return (
+                  <button key={type} onClick={() => switchType(type)}
+                    style={{ flex: 1, padding: "7px 6px", borderRadius: 10, border: `1.5px solid ${isActive ? tc.color : t.border}`, background: isActive ? tc.bg : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontFamily: "'Inter',system-ui,sans-serif", transition: "all 0.15s" }}>
+                    <span style={{ fontSize: 13 }}>{tc.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? tc.color : t.textSub }}>{tc.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Mini-carte */}
-          <div style={{ height: 180, flexShrink: 0 }}>
-            <MapContainer center={[selectedStop.lat, selectedStop.lon]} zoom={16}
-              style={{ height: "100%", width: "100%" }} ref={mapRef} zoomControl={false}>
-              <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={t.mapTile} />
-              {nearbyStops.map(s => (
-                <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={5}
-                  fillColor={t.textHint} color="#fff" weight={1.5} fillOpacity={0.7}
-                  eventHandlers={{ click: () => selectStop(s) }}>
-                  <Popup><span style={{ fontSize: 11, fontFamily: "'Inter',system-ui,sans-serif" }}>{s.name}</span></Popup>
-                </CircleMarker>
-              ))}
-              <Marker position={[selectedStop.lat, selectedStop.lon]} icon={stopIcon}>
-                <Popup><strong style={{ fontFamily: "'Inter',system-ui,sans-serif" }}>{selectedStop.name}</strong></Popup>
-              </Marker>
-              <FlyTo position={[selectedStop.lat, selectedStop.lon]} />
-            </MapContainer>
-          </div>
+          {selectedEntry && (
+            <div style={{ height: 160, flexShrink: 0 }}>
+              <MapContainer center={[selectedEntry.lat, selectedEntry.lon]} zoom={15}
+                style={{ height: "100%", width: "100%" }} ref={mapRef} zoomControl={false}>
+                <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={t.mapTile} />
+                {allEntries.filter(e => e.id !== selectedEntry.id).map(e => (
+                  <CircleMarker key={e.id} center={[e.lat, e.lon]} radius={5}
+                    fillColor={e.types.includes("tram") ? "#3b8eea" : "#fbbf24"} color="#fff" weight={1.5} fillOpacity={0.8}
+                    eventHandlers={{ click: () => { setSelectedEntry(e); setActiveType(e.types[0]); setPassages([]); fetchPassages(e.id); } }}>
+                    <Popup><span style={{ fontSize: 11, fontFamily: "'Inter',system-ui,sans-serif" }}>{selectedGroup.name} ({e.types.join("/")})</span></Popup>
+                  </CircleMarker>
+                ))}
+                <Marker position={[selectedEntry.lat, selectedEntry.lon]} icon={stopIcon}>
+                  <Popup><strong style={{ fontFamily: "'Inter',system-ui,sans-serif" }}>{selectedGroup.name}</strong></Popup>
+                </Marker>
+                <FlyTo position={[selectedEntry.lat, selectedEntry.lon]} />
+              </MapContainer>
+            </div>
+          )}
 
           {/* Header arrêt */}
           <div style={{ padding: "10px 16px", background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0074c9", flexShrink: 0 }}></div>
+            {activeType && TYPE_CONFIG[activeType] && (
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: TYPE_CONFIG[activeType].color, flexShrink: 0 }}></div>
+            )}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selectedStop.name}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selectedGroup.name}</div>
               <div style={{ fontSize: 10, color: t.textSub, marginTop: 1 }}>
                 {loading ? "Chargement..." : loadedAt ? `Horaires du ${loadedAt.toLocaleDateString("fr-FR", { weekday: "long" })}` : ""}
               </div>
             </div>
-            <button onClick={() => { setSelectedStop(null); setQuery(""); setPassages([]); }}
+            <button onClick={() => { setSelectedGroup(null); setSelectedEntry(null); setQuery(""); setPassages([]); }}
               style={{ background: "none", border: "none", cursor: "pointer", color: t.textHint, fontSize: 20, padding: 0, lineHeight: 1 }}>×</button>
           </div>
 
@@ -294,9 +333,7 @@ export default function ArretPanel({ theme: t }) {
                 <div style={{ fontSize: 13, color: t.textSub, lineHeight: 1.7 }}>Aucun passage prévu dans la prochaine heure pour cet arrêt.</div>
               </div>
             ) : (
-              passages.map((p, i) => (
-                <PassageRow key={p.key + i} p={p} t={t} isFirst={i === 0} />
-              ))
+              passages.map((p, i) => <PassageRow key={p.key + i} p={p} t={t} isFirst={i === 0} />)
             )}
           </div>
         </div>
@@ -315,7 +352,7 @@ function PassageRow({ p, t, isFirst }) {
 
   return (
     <div style={{ padding: "11px 16px", borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 12, background: isFirst ? `${color}08` : t.panelBg }}>
-      <div style={{ minWidth: 36, height: 28, borderRadius: 8, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", padding: "0 6px", flexShrink: 0 }}>
+      <div style={{ minWidth: 34, height: 26, borderRadius: 7, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", padding: "0 6px", flexShrink: 0 }}>
         {p.name}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>

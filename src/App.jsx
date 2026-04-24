@@ -6,6 +6,7 @@ import { getTheme } from "./theme";
 import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import ArretPanel from "./components/ArretPanel";
+import AboutPanel from "./components/AboutPanel";
 
 const FILTER_CHIPS = [
   { key: "showTrams",    label: "🚊 Trams",   activeColor: "#60a5fa", activeBg: "rgba(0,116,201,0.18)" },
@@ -27,7 +28,7 @@ const TABS = [
   { id: "live",    label: "Live",    icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" },
   { id: "arret",   label: "Arrêt",   icon: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" },
   { id: "lignes",  label: "Lignes",  icon: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" },
-  { id: "horaires",label: "Horaires",icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2" },
+  { id: "about",   label: "Infos",   icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" },
 ];
 
 export default function WimT() {
@@ -138,13 +139,13 @@ export default function WimT() {
           ...(activeTab === "live" ? { display: "none" } : {}),
         }}>
           {activeTab === "arret" && (
-            <ArretPanel theme={t} routesMap={gtfsRef.current?.routes} />
+            <ArretPanel theme={t} />
           )}
           {activeTab === "lignes" && (
             <LignesPanel theme={t} groupedVehicles={groupedVehicles} onVehicleClick={handleVehicleClick} selectedVehicle={selectedVehicle} />
           )}
-          {activeTab === "horaires" && (
-            <HorairesPanel theme={t} />
+          {activeTab === "about" && (
+            <AboutPanel theme={t} />
           )}
         </div>
 
@@ -264,13 +265,3 @@ function LignesPanel({ theme: t, groupedVehicles, onVehicleClick, selectedVehicl
   );
 }
 
-function HorairesPanel({ theme: t }) {
-  return (
-    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, color: t.textSub, padding: 32 }}>
-      <div style={{ fontSize: 32 }}>🕐</div>
-      <div style={{ fontSize: 14, fontWeight: 500, color: t.text }}>Horaires</div>
-      <div style={{ fontSize: 12, color: t.textSub, textAlign: "center", lineHeight: 1.6 }}>Fonctionnalité à venir. En attendant, retrouve les horaires sur le site de la TAM.</div>
-      <a href="https://www.tam-voyages.com" target="_blank" rel="noreferrer" style={{ marginTop: 8, padding: "8px 18px", borderRadius: 10, background: "#0074c9", color: "#fff", fontSize: 12, fontWeight: 500, textDecoration: "none" }}>Site TAM →</a>
-    </div>
-  );
-}
