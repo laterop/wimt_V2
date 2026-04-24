@@ -2,14 +2,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import Papa from "papaparse";
-import protobuf from "protobufjs";
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const PROXY_URL = import.meta.env.VITE_GTFS_RT_URL || "https://tam-proxy.drivedemerde.workers.dev";
-const TRIP_UPDATE_URL = `${PROXY_URL}?feed=tripupdate`;
-
-// ─── Cache stops ─────────────────────────────────────────────────────────────
+// ─── Cache stops ──────────────────────────────────────────────────────────────
 
 let stopsCache = null;
 async function loadStops() {
@@ -32,28 +26,6 @@ async function loadStops() {
   return stops;
 }
 
-// ─── Cache proto ──────────────────────────────────────────────────────────────
-
-let FeedMessageCache = null;
-async function getFeedMessage() {
-  if (FeedMessageCache) return FeedMessageCache;
-  const protoText = await fetch("/gtfs-realtime.proto").then(r => r.text());
-  const root = protobuf.parse(protoText).root;
-  FeedMessageCache = root.lookupType("transit_realtime.FeedMessage");
-  return FeedMessageCache;
-}
-
-// ─── Fetch TripUpdate ─────────────────────────────────────────────────────────
-
-async function fetchTripUpdates() {
-  const [FeedMessage, buffer] = await Promise.all([
-    getFeedMessage(),
-    fetch(TRIP_UPDATE_URL).then(r => r.arrayBuffer()),
-  ]);
-  const msg = FeedMessage.decode(new Uint8Array(buffer));
-  return msg.entity || [];
-}
-
 // ─── Utilitaires ─────────────────────────────────────────────────────────────
 
 function distKm(lat1, lon1, lat2, lon2) {
@@ -65,11 +37,40 @@ function distKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function toSeconds(t) {
-  // Long protobuf (low/high) ou number
-  if (t == null) return null;
-  if (typeof t === "object" && t.low != null) return t.low;
-  return Number(t);
+// Convertit "HH:MM:SS" (peut dépasser 24h en GTFS) en secondes depuis minuit aujourd'hui
+function depToTimestamp(dep) {
+  const parts = dep.split(":");
+  if (parts.length < 2) return null;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const s = parseInt(parts[2] || "0", 10);
+  const now = new Date();
+  const midnightToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+  return midnightToday + h * 3600 + m * 60 + s;
+}
+
+// Filtre les service_id actifs selon le jour courant (sans calendar.txt)
+// Les service_id TAM contiennent "LAV" (semaine), "SAM" (samedi), "DIM" (dimanche)
+// et les codes courts 23_1 à 23_8 (dont 23_7 = samedi, 23_8 = dimanche selon convention)
+function isServiceActive(serviceId) {
+  const dow = new Date().getDay(); // 0=dim, 1=lun, ..., 6=sam
+  const id = (serviceId || "").toUpperCase();
+
+  if (id.includes("LAV") || id.includes("SEMAINE")) {
+    return dow >= 1 && dow <= 5; // lun-ven
+  }
+  if (id.includes("RED")) {
+    return dow >= 1 && dow <= 5; // semaine réduit
+  }
+  if (id.includes("SAM") || id.includes("SAMEDI")) {
+    return dow === 6;
+  }
+  if (id.includes("DIM") || id.includes("DIMANCHE")) {
+    return dow === 0;
+  }
+  // Codes courts 23_x : convention TAM approximative
+  // Sans calendar.txt, on accepte tous les codes courts (meilleur que rien)
+  return true;
 }
 
 function FlyTo({ position }) {
@@ -84,7 +85,7 @@ const POPULAR = ["Corum", "Comédie", "Gare Saint-Roch", "Mosson", "Odysseum", "
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function ArretPanel({ theme: t, routesMap }) {
+export default function ArretPanel({ theme: t }) {
   const [query, setQuery]               = useState("");
   const [allStops, setAllStops]         = useState([]);
   const [suggestions, setSuggestions]   = useState([]);
@@ -92,9 +93,8 @@ export default function ArretPanel({ theme: t, routesMap }) {
   const [selectedStop, setSelectedStop] = useState(null);
   const [passages, setPassages]         = useState([]);
   const [loading, setLoading]           = useState(false);
-  const [lastFetch, setLastFetch]       = useState(null);
+  const [loadedAt, setLoadedAt]         = useState(null);
   const mapRef = useRef(null);
-  const timerRef = useRef(null);
 
   // Charger stops au montage
   useEffect(() => { loadStops().then(setAllStops); }, []);
@@ -113,65 +113,63 @@ export default function ArretPanel({ theme: t, routesMap }) {
     setSuggestions(res);
   }, [query, allStops]);
 
-  // Fetch TripUpdate pour l'arrêt sélectionné
+  // Charge les passages pour un arrêt depuis /stops/{id}.json
   const fetchPassages = useCallback(async (stop) => {
     if (!stop) return;
     setLoading(true);
     try {
-      const entities = await fetchTripUpdates();
+      const data = await fetch(`/stops/${stop.id}.json`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      });
+
       const now = Math.floor(Date.now() / 1000);
       const results = [];
 
-      for (const entity of entities) {
-        const tu = entity.tripUpdate;
-        if (!tu || !tu.stopTimeUpdate) continue;
-        const trip = tu.trip || {};
-        const route_id = (trip.routeId || "").replace(/^.*:/, "");
+      for (const p of data) {
+        // Filtrer par service actif
+        if (!isServiceActive(p.s)) continue;
 
-        for (const stu of tu.stopTimeUpdate) {
-          const sid = String(stu.stopId || "").trim();
-          if (sid !== stop.id) continue;
+        const ts = depToTimestamp(p.dep);
+        if (ts == null) continue;
 
-          // Prendre departure ou arrival
-          const dep = stu.departure || stu.arrival;
-          if (!dep) continue;
-          const ts = toSeconds(dep.time);
-          if (!ts) continue;
+        const mins = Math.round((ts - now) / 60);
+        if (mins < -1 || mins > 90) continue;
 
-          const mins = Math.round((ts - now) / 60);
-          if (mins < 0 || mins > 60) continue;
-
-          results.push({
-            trip_id:   trip.tripId || "",
-            route_id,
-            mins,
-            ts,
-            headsign:  tu.vehicle?.label || "",
-          });
-        }
+        results.push({
+          key:     `${p.dep}|${p.n}|${p.h}`,
+          ts,
+          mins,
+          dep:     p.dep.slice(0, 5), // "HH:MM"
+          name:    p.n,               // route_short_name
+          headsign:p.h,               // trip_headsign
+          color:   p.c,               // route_color (hex sans #)
+          dir:     p.d,               // direction_id
+        });
       }
 
-      // Dédupliquer par trip_id et trier
+      // Dédoublonnage sur (dep + nom + headsign) et tri
       const seen = new Set();
       const deduped = results
-        .filter(r => { if (seen.has(r.trip_id)) return false; seen.add(r.trip_id); return true; })
-        .sort((a, b) => a.mins - b.mins)
-        .slice(0, 12);
+        .filter(r => { if (seen.has(r.key)) return false; seen.add(r.key); return true; })
+        .sort((a, b) => a.ts - b.ts)
+        .slice(0, 15);
 
       setPassages(deduped);
-      setLastFetch(new Date());
+      setLoadedAt(new Date());
     } catch (err) {
-      console.error("TripUpdate fetch error:", err);
+      console.error("Passages fetch error:", err);
+      setPassages([]);
     }
     setLoading(false);
   }, []);
 
-  // Refresh toutes les 20s
+  // Refresh toutes les 30s
   useEffect(() => {
     if (!selectedStop) return;
     fetchPassages(selectedStop);
-    timerRef.current = setInterval(() => fetchPassages(selectedStop), 20000);
-    return () => clearInterval(timerRef.current);
+    const timer = setInterval(() => fetchPassages(selectedStop), 30000);
+    return () => clearInterval(timer);
   }, [selectedStop, fetchPassages]);
 
   const selectStop = (stop) => {
@@ -255,11 +253,10 @@ export default function ArretPanel({ theme: t, routesMap }) {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
           {/* Mini-carte */}
-          <div style={{ height: 190, flexShrink: 0 }}>
+          <div style={{ height: 180, flexShrink: 0 }}>
             <MapContainer center={[selectedStop.lat, selectedStop.lon]} zoom={16}
               style={{ height: "100%", width: "100%" }} ref={mapRef} zoomControl={false}>
               <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={t.mapTile} />
-
               {nearbyStops.map(s => (
                 <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={5}
                   fillColor={t.textHint} color="#fff" weight={1.5} fillOpacity={0.7}
@@ -267,22 +264,20 @@ export default function ArretPanel({ theme: t, routesMap }) {
                   <Popup><span style={{ fontSize: 11, fontFamily: "'Inter',system-ui,sans-serif" }}>{s.name}</span></Popup>
                 </CircleMarker>
               ))}
-
               <Marker position={[selectedStop.lat, selectedStop.lon]} icon={stopIcon}>
                 <Popup><strong style={{ fontFamily: "'Inter',system-ui,sans-serif" }}>{selectedStop.name}</strong></Popup>
               </Marker>
-
               <FlyTo position={[selectedStop.lat, selectedStop.lon]} />
             </MapContainer>
           </div>
 
           {/* Header arrêt */}
-          <div style={{ padding: "11px 16px", background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <div style={{ padding: "10px 16px", background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0074c9", flexShrink: 0 }}></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selectedStop.name}</div>
               <div style={{ fontSize: 10, color: t.textSub, marginTop: 1 }}>
-                {loading ? "Chargement..." : lastFetch ? `Mis à jour à ${lastFetch.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}
+                {loading ? "Chargement..." : loadedAt ? `Horaires du ${loadedAt.toLocaleDateString("fr-FR", { weekday: "long" })}` : ""}
               </div>
             </div>
             <button onClick={() => { setSelectedStop(null); setQuery(""); setPassages([]); }}
@@ -300,7 +295,7 @@ export default function ArretPanel({ theme: t, routesMap }) {
               </div>
             ) : (
               passages.map((p, i) => (
-                <PassageRow key={p.trip_id + i} p={p} t={t} routesMap={routesMap} isFirst={i === 0} />
+                <PassageRow key={p.key + i} p={p} t={t} isFirst={i === 0} />
               ))
             )}
           </div>
@@ -312,32 +307,26 @@ export default function ArretPanel({ theme: t, routesMap }) {
 
 // ─── Ligne de passage ─────────────────────────────────────────────────────────
 
-function PassageRow({ p, t, routesMap, isFirst }) {
-  const route = routesMap?.get(p.route_id) || {};
-  const color = route.route_color ? `#${route.route_color}` : "#0074c9";
-  const fg    = route.route_text_color ? `#${route.route_text_color}` : "#ffffff";
-  const name  = route.route_short_name || p.route_id || "?";
+function PassageRow({ p, t, isFirst }) {
+  const color = p.color ? `#${p.color}` : "#0074c9";
   const mins  = p.mins;
-
-  const minLabel = mins === 0 ? "Imm." : `${mins} min`;
+  const minLabel = mins <= 0 ? "Imm." : `${mins} min`;
   const minColor = mins <= 1 ? "#22c55e" : mins <= 4 ? "#f59e0b" : t.accent;
 
-  // Heure de passage
-  const heure = new Date(p.ts * 1000).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-
   return (
-    <div style={{ padding: "12px 16px", borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 12, background: isFirst ? `${color}08` : t.panelBg }}>
-      <div style={{ minWidth: 36, height: 28, borderRadius: 8, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: fg, padding: "0 6px", flexShrink: 0 }}>
-        {name}
+    <div style={{ padding: "11px 16px", borderBottom: `0.5px solid ${t.border}`, display: "flex", alignItems: "center", gap: 12, background: isFirst ? `${color}08` : t.panelBg }}>
+      <div style={{ minWidth: 36, height: 28, borderRadius: 8, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", padding: "0 6px", flexShrink: 0 }}>
+        {p.name}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {route.route_long_name || `Ligne ${name}`}
+          {p.headsign}
         </div>
-        <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>départ {heure}</div>
+        <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>départ {p.dep}</div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: minColor, lineHeight: 1 }}>{minLabel}</div>
+        {mins > 0 && <div style={{ fontSize: 9, color: t.textHint, marginTop: 2 }}>min</div>}
       </div>
     </div>
   );
@@ -362,8 +351,8 @@ function EmptyState({ t, onSelect }) {
       </div>
       <div style={{ padding: "24px 20px", background: t.cardBg, borderRadius: 16, border: `0.5px solid ${t.border}`, textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 10 }}>🚏</div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: t.text, marginBottom: 8 }}>Prochain passage</div>
-        <div style={{ fontSize: 12, color: t.textSub, lineHeight: 1.7 }}>Recherche un arrêt pour voir les prochains passages en temps réel avec l'heure exacte.</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: t.text, marginBottom: 8 }}>Prochains passages</div>
+        <div style={{ fontSize: 12, color: t.textSub, lineHeight: 1.7 }}>Recherche un arrêt pour voir les prochains passages avec l'heure exacte.</div>
       </div>
     </div>
   );
