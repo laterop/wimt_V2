@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import { countStopsAway } from "../hooks/useNextStop";
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
@@ -44,36 +45,32 @@ function isServiceActive(serviceId) {
   return true;
 }
 
-// Trouve le véhicule le plus probable pour un passage donné.
-// Utilise le prochain arrêt calculé (nextStops Map) pour chaque véhicule :
-// un véhicule dont le prochain arrêt est notre stop_id est un candidat direct.
-// Parmi les candidats, on trie par minutes restantes.
-function findVehicle(vehicules, nextStops, passage, stopId, stopLat, stopLon) {
+// Trouve le meilleur candidat-véhicule pour un passage donné.
+// On cherche parmi les véhicules de la même ligne+direction celui dont le prochain
+// arrêt (ou un arrêt à venir dans la séquence) correspond à l'arrêt cible.
+// On préfère le véhicule le plus avancé (le plus proche dans la séquence).
+function findVehicle(vehicules, nextStops, passage, stopId) {
   const candidates = vehicules.filter(v =>
     v.route_short_name === passage.name &&
     String(v.direction_id) === String(passage.dir)
   );
   if (candidates.length === 0) return null;
 
-  // Candidats dont le prochain arrêt calculé = notre arrêt
-  const exact = candidates.filter(v => {
+  // Pour chaque candidat, calculer combien d'arrêts le séparent de notre stop
+  const scored = [];
+  for (const v of candidates) {
     const ns = nextStops.get(v.id);
-    return ns && String(ns.stopId) === String(stopId);
-  });
-
-  if (exact.length > 0) {
-    // Parmi ceux dont le prochain stop = notre arrêt, prendre le plus proche
-    return exact.reduce((best, v) => {
-      const ns = nextStops.get(v.id);
-      const bestNs = nextStops.get(best.id);
-      return (ns?.distM ?? Infinity) < (bestNs?.distM ?? Infinity) ? v : best;
-    });
+    if (!ns) continue;
+    const info = countStopsAway(ns, stopId);
+    if (info === null) continue; // véhicule a déjà dépassé ou ne dessert pas cet arrêt
+    scored.push({ v, ns, info, stopsAway: info.stopsAway });
   }
 
-  // Fallback : aucun véhicule n'a notre arrêt comme prochain stop.
-  // Le passage est peut-être encore loin, ou le véhicule n'est pas en service.
-  // On retourne null pour ne pas afficher un mauvais résultat.
-  return null;
+  if (scored.length === 0) return null;
+
+  // Le plus avancé = le moins d'arrêts restants avant notre stop
+  scored.sort((a, b) => a.stopsAway - b.stopsAway);
+  return scored[0];
 }
 
 const TYPE_CONFIG = {
@@ -366,19 +363,18 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
               </div>
             ) : (
               passages.map((p, i) => {
-                const matched = selectedEntry
-                  ? findVehicle(vehicules, nextStops, p, selectedEntry.id, selectedEntry.lat, selectedEntry.lon)
+                const result = selectedEntry
+                  ? findVehicle(vehicules, nextStops, p, selectedEntry.id)
                   : null;
-                const ns = matched ? nextStops.get(matched.id) : null;
                 return (
                   <PassageRow
                     key={p.key + i}
                     p={p}
                     t={t}
                     isFirst={i === 0}
-                    matchedVehicle={matched}
-                    nextStopInfo={ns}
-                    onTrack={matched && onTrackVehicle ? () => onTrackVehicle(matched) : null}
+                    matchResult={result}
+                    stopName={selectedGroup?.name}
+                    onTrack={result && onTrackVehicle ? () => onTrackVehicle(result.v) : null}
                   />
                 );
               })
@@ -392,23 +388,41 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
 
 // ─── Ligne de passage ─────────────────────────────────────────────────────────
 
-function PassageRow({ p, t, isFirst, matchedVehicle, nextStopInfo, onTrack }) {
+function PassageRow({ p, t, isFirst, matchResult, stopName, onTrack }) {
   const color = p.color ? `#${p.color}` : "#0074c9";
   const mins  = p.mins;
   const minLabel = mins <= 0 ? "Imm." : `${mins} min`;
   const minColor = mins <= 1 ? "#22c55e" : mins <= 4 ? "#f59e0b" : t.accent;
 
-  // Description de la position du véhicule
-  let vehicleStatus = null;
-  if (matchedVehicle && nextStopInfo) {
-    if (nextStopInfo.isAtStop) {
-      vehicleStatus = `À l'arrêt « ${nextStopInfo.currentStop} »`;
+  // Construire le texte de statut du véhicule
+  let statusIcon  = "🚃";
+  let statusTitle = null;
+  let statusSub   = null;
+
+  if (matchResult) {
+    const { ns, info } = matchResult;
+    const stopsAway = info.stopsAway;
+    const speed     = matchResult.v.speed ?? 0;
+
+    if (ns.isAtStop) {
+      statusIcon  = "🚏";
+      statusTitle = `À l'arrêt « ${ns.currentStop} »`;
+      statusSub   = stopsAway === 0
+        ? `Prochain départ ici`
+        : `Encore ${stopsAway} arrêt${stopsAway > 1 ? "s" : ""} avant ${stopName}`;
+    } else if (stopsAway === 0) {
+      // Le prochain arrêt du véhicule EST notre arrêt
+      const distM = Math.round(ns.distM);
+      const distLabel = distM >= 1000 ? `${(distM / 1000).toFixed(1)} km` : `${distM} m`;
+      statusIcon  = "🚃";
+      statusTitle = `En approche · ${distLabel}`;
+      statusSub   = speed > 1 ? `${Math.round(speed)} km/h` : "À l'arrêt précédent";
     } else {
-      const distM = Math.round(nextStopInfo.distM);
-      const distLabel = distM >= 1000
-        ? `${(distM / 1000).toFixed(1)} km`
-        : `${distM} m`;
-      vehicleStatus = `À ${distLabel} de cet arrêt`;
+      // Plusieurs arrêts de distance
+      const prevStop = info.nextStopName; // prochain arrêt du véhicule = stop intermédiaire
+      statusIcon  = "🚃";
+      statusTitle = `Encore ${stopsAway} arrêt${stopsAway > 1 ? "s" : ""} avant ${stopName}`;
+      statusSub   = prevStop ? `Prochain arrêt : ${prevStop}` : (speed > 1 ? `${Math.round(speed)} km/h` : null);
     }
   }
 
@@ -430,41 +444,23 @@ function PassageRow({ p, t, isFirst, matchedVehicle, nextStopInfo, onTrack }) {
         </div>
       </div>
 
-      {/* Bandeau véhicule localisé */}
+      {/* Bandeau statut véhicule */}
       {onTrack ? (
-        <button
-          onClick={onTrack}
-          style={{
-            width: "100%", padding: "7px 16px 9px",
-            background: `${color}0a`, border: "none", borderTop: `0.5px solid ${color}22`,
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
-            fontFamily: "'Inter',system-ui,sans-serif", textAlign: "left",
-          }}
-        >
-          <span style={{ fontSize: 13 }}>
-            {nextStopInfo?.isAtStop ? "🚏" : "🚃"}
-          </span>
+        <button onClick={onTrack} style={{ width: "100%", padding: "7px 16px 9px", background: `${color}0a`, border: "none", borderTop: `0.5px solid ${color}22`, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Inter',system-ui,sans-serif", textAlign: "left" }}>
+          <span style={{ fontSize: 13, flexShrink: 0 }}>{statusIcon}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color }}>
-              {nextStopInfo?.isAtStop ? "En cours de chargement" : "En approche"}
-            </div>
-            {vehicleStatus && (
-              <div style={{ fontSize: 10, color: t.textHint, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {vehicleStatus}
-                {matchedVehicle.speed > 1 ? ` · ${Math.round(matchedVehicle.speed)} km/h` : ""}
-              </div>
-            )}
+            {statusTitle && <div style={{ fontSize: 11, fontWeight: 600, color }}>{statusTitle}</div>}
+            {statusSub   && <div style={{ fontSize: 10, color: t.textHint, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{statusSub}</div>}
           </div>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" style={{ flexShrink: 0 }}>
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
       ) : (
-        // Aucun véhicule localisé : pas encore en service
-        mins > 0 && mins <= 60 && (
+        mins > 0 && mins <= 90 && (
           <div style={{ padding: "5px 16px 8px", display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: 11 }}>⏳</span>
-            <span style={{ fontSize: 10, color: t.textHint }}>Véhicule pas encore en service</span>
+            <span style={{ fontSize: 10, color: t.textHint }}>Véhicule non encore localisé sur le réseau</span>
           </div>
         )
       )}

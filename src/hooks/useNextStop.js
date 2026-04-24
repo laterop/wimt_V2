@@ -2,6 +2,8 @@
 // Calcule le prochain arrêt de chaque véhicule en temps réel
 // à partir des séquences d'arrêts GTFS et de la position GPS.
 
+import { useState, useEffect, useRef } from "react";
+
 let gtfsDataCache = null;
 async function loadGtfsData() {
   if (gtfsDataCache) return gtfsDataCache;
@@ -23,8 +25,6 @@ function distKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Angle entre la direction du véhicule et la direction vers un point cible.
-// Retourne 0..180.
 function angleToTarget(vLat, vLon, vBearing, tLat, tLon) {
   const dLon = (tLon - vLon) * Math.cos((vLat * Math.PI) / 180);
   const dLat = tLat - vLat;
@@ -33,9 +33,10 @@ function angleToTarget(vLat, vLon, vBearing, tLat, tLon) {
 }
 
 // ─── Calcul du prochain arrêt pour un véhicule ────────────────────────────────
-
-// Renvoie { stopId, stopName, stopLat, stopLon, distM, seq, isAtStop }
-// ou null si on ne peut pas déterminer.
+// Retourne :
+//   { stopId, stopName, stopLat, stopLon, distM, seqIndex, fullSequence, isAtStop, currentStop }
+// seqIndex : index dans fullSequence du prochain stop
+// fullSequence : tableau ordonné des stops valides de la ligne+direction
 export function computeNextStop(vehicle, gtfsData) {
   const line = gtfsData[vehicle.route_short_name];
   if (!line) return null;
@@ -44,106 +45,123 @@ export function computeNextStop(vehicle, gtfsData) {
   const stops = line.traces?.[dir];
   if (!stops || stops.length === 0) return null;
 
-  // Filtrer les stops avec coords valides
-  const validStops = stops.filter(
-    (s) =>
-      s.lat !== null &&
-      s.lon !== null &&
-      !isNaN(parseFloat(s.lat)) &&
-      !isNaN(parseFloat(s.lon))
-  );
-  if (validStops.length === 0) return null;
+  // Stops avec coords valides, on garde l'index original pour le comptage
+  const fullSequence = stops
+    .map((s, i) => ({
+      ...s,
+      lat: s.lat !== null ? parseFloat(s.lat) : null,
+      lon: s.lon !== null ? parseFloat(s.lon) : null,
+      origIdx: i,
+    }))
+    .filter(s => s.lat !== null && s.lon !== null && !isNaN(s.lat) && !isNaN(s.lon));
+
+  if (fullSequence.length === 0) return null;
 
   const vLat = vehicle.lat;
   const vLon = vehicle.lon;
   const vBearing = vehicle.bearing ?? 0;
   const vSpeed = vehicle.speed ?? 0;
 
-  // Calculer la distance à chaque stop
-  const withDist = validStops.map((s) => ({
+  // Distance de chaque stop au véhicule
+  const withDist = fullSequence.map(s => ({
     ...s,
-    lat: parseFloat(s.lat),
-    lon: parseFloat(s.lon),
-    dist: distKm(vLat, vLon, parseFloat(s.lat), parseFloat(s.lon)),
+    dist: distKm(vLat, vLon, s.lat, s.lon),
   }));
 
-  // Trouver le stop le plus proche (toutes directions)
+  // Stop le plus proche
   const nearest = withDist.reduce((a, b) => (a.dist < b.dist ? a : b));
-  const nearestDist = nearest.dist * 1000; // en mètres
+  const nearestDist = nearest.dist * 1000;
 
-  // Si le véhicule est à moins de 60m du stop et vitesse faible : il est À l'arrêt
+  // À l'arrêt si dist < 60m et vitesse faible
   const isAtStop = nearestDist < 60 && vSpeed < 2;
 
+  let nextStop, seqIndex;
+
   if (isAtStop) {
-    // Il vient d'arriver ou est à l'arrêt : le prochain est le suivant dans la séquence
     const nearestIdx = withDist.indexOf(nearest);
-    const nextStop = withDist[nearestIdx + 1] || nearest;
+    const nextIdx = Math.min(nearestIdx + 1, withDist.length - 1);
+    nextStop = withDist[nextIdx];
+    seqIndex = nextIdx;
     return {
-      stopId: nextStop.id,
-      stopName: nextStop.name,
-      stopLat: nextStop.lat,
-      stopLon: nextStop.lon,
-      distM: nextStop.dist * 1000,
-      seq: nextStop.seq,
-      isAtStop: true,
-      currentStop: nearest.name,
+      stopId:       nextStop.id,
+      stopName:     nextStop.name,
+      stopLat:      nextStop.lat,
+      stopLon:      nextStop.lon,
+      distM:        nearestDist,
+      seqIndex,
+      fullSequence: withDist,
+      isAtStop:     true,
+      currentStop:  nearest.name,
+      currentStopId: nearest.id,
     };
   }
 
-  // Sinon : chercher le premier stop devant le véhicule (angle < 90° par rapport au bearing)
-  // parmi les stops proches (on prend les N premiers par distance)
-  const sorted = [...withDist].sort((a, b) => a.dist - b.dist);
+  // Chercher le premier stop devant le véhicule (bearing < 90°)
+  const sorted = [...withDist]
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => a.s.dist - b.s.dist);
 
-  // Stratégie : parmi les 5 stops les plus proches, prendre celui qui est devant
-  // avec la distance minimale.
-  let nextStop = null;
-  for (const s of sorted.slice(0, 8)) {
+  let found = null;
+  for (const { s, i: _i } of sorted.slice(0, 8)) {
     const angle = vBearing > 0
       ? angleToTarget(vLat, vLon, vBearing, s.lat, s.lon)
-      : 180; // si pas de bearing, on prend juste le plus proche
-    if (angle < 90) {
-      nextStop = s;
-      break;
-    }
+      : 180;
+    if (angle < 90) { found = s; break; }
   }
+  if (!found) found = sorted[0].s;
 
-  // Fallback : si aucun stop n'est "devant" (bearing mal renseigné ou fin de ligne),
-  // prendre le plus proche.
-  if (!nextStop) nextStop = sorted[0];
+  seqIndex = withDist.indexOf(found);
 
   return {
-    stopId: nextStop.id,
-    stopName: nextStop.name,
-    stopLat: nextStop.lat,
-    stopLon: nextStop.lon,
-    distM: nextStop.dist * 1000,
-    seq: nextStop.seq,
-    isAtStop: false,
-    currentStop: null,
+    stopId:       found.id,
+    stopName:     found.name,
+    stopLat:      found.lat,
+    stopLon:      found.lon,
+    distM:        found.dist * 1000,
+    seqIndex,
+    fullSequence: withDist,
+    isAtStop:     false,
+    currentStop:  null,
+    currentStopId: null,
   };
+}
+
+// Compte le nombre d'arrêts entre la position actuelle du véhicule et un stop cible.
+// Retourne { stopsAway, prevStopName } ou null.
+export function countStopsAway(nextStopInfo, targetStopId) {
+  if (!nextStopInfo) return null;
+  const { fullSequence, seqIndex } = nextStopInfo;
+
+  // Chercher le stop cible dans la séquence à partir du prochain arrêt
+  for (let i = seqIndex; i < fullSequence.length; i++) {
+    if (String(fullSequence[i].id) === String(targetStopId)) {
+      const stopsAway = i - seqIndex; // 0 = c'est le prochain, 1 = dans 1 arrêt, etc.
+      const prevStop = seqIndex > 0 ? fullSequence[seqIndex - 1] : null;
+      return {
+        stopsAway,
+        nextStopName: fullSequence[seqIndex]?.name,
+        prevStopName: prevStop?.name || null,
+      };
+    }
+  }
+  return null; // pas trouvé (véhicule a dépassé l'arrêt ou mauvaise direction)
 }
 
 // ─── Hook React ───────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useRef } from "react";
-
 export function useNextStop(vehicules) {
-  const [nextStops, setNextStops] = useState(new Map()); // vehicle.id -> nextStop info
+  const [nextStops, setNextStops] = useState(new Map());
   const gtfsRef = useRef(null);
 
   useEffect(() => {
-    loadGtfsData().then((data) => {
-      gtfsRef.current = data;
-    });
+    loadGtfsData().then(data => { gtfsRef.current = data; });
   }, []);
 
   useEffect(() => {
     if (!gtfsRef.current || vehicules.length === 0) return;
-    const gtfsData = gtfsRef.current;
-
     const map = new Map();
     for (const v of vehicules) {
-      const result = computeNextStop(v, gtfsData);
+      const result = computeNextStop(v, gtfsRef.current);
       if (result) map.set(v.id, result);
     }
     setNextStops(map);
