@@ -177,6 +177,7 @@ export default function WimT() {
             toggleFilter={toggleFilter}
             lastUpdate={lastUpdate}
             error={error}
+            nextStops={nextStops}
           />
         </div>
       </div>

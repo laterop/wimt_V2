@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
+import RoutePanel from "./RoutePanel";
 
 function FlyTo({ position }) {
   const map = useMap();
@@ -10,7 +11,7 @@ function FlyTo({ position }) {
   return null;
 }
 
-export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedRouteData, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
+export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
 
   const glassPanel = {
@@ -33,7 +34,12 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
         <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={mapTile} />
 
         {filters.showTrace && selectedRouteData?.trace?.length > 1 && (
-          <Polyline positions={selectedRouteData.trace} color={`#${selectedRouteData.color}`} weight={5} opacity={0.85} />
+          <Polyline
+            key={`${selectedRouteData.short_name}-${selectedRouteData.color}`}
+            positions={selectedRouteData.trace}
+            color={`#${selectedRouteData.color}`}
+            weight={5} opacity={0.85}
+          />
         )}
 
         {filters.showStops && selectedRouteData?.stops?.map((s, i) => (
@@ -138,29 +144,24 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
         ))}
       </div>
 
-      {/* Chip véhicule sélectionné */}
-      {selectedVehicleObj && (
-        <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 1001, ...glassPanel, padding: "8px 12px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 24px rgba(0,0,0,0.18)", whiteSpace: "nowrap", maxWidth: "80vw" }}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: `#${selectedVehicleObj.route_color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: `#${selectedVehicleObj.route_text_color || "fff"}`, flexShrink: 0 }}>
-            {selectedVehicleObj.route_short_name}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: text, overflow: "hidden", textOverflow: "ellipsis" }}>{selectedVehicleObj.headsign}</div>
-            <div style={{ fontSize: 10, color: textSub }}>
-              {selectedVehicleObj.speed > 0 ? `${Math.round(selectedVehicleObj.speed)} km/h` : "À l'arrêt"}
-            </div>
-          </div>
-          <button onClick={onDeselect} style={{ background: "none", border: "none", cursor: "pointer", color: textHint, fontSize: 18, padding: "0 0 0 4px", lineHeight: 1, flexShrink: 0 }}>×</button>
-        </div>
-      )}
 
       {/* Statut live */}
-      <div style={{ position: "absolute", left: 14, bottom: 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ position: "absolute", left: 14, bottom: selectedVehicleObj ? 220 : 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, transition: "bottom 0.25s ease" }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: error ? "#ef4444" : lastUpdate ? "#22c55e" : "#f59e0b", display: "block", flexShrink: 0 }}></span>
         <span style={{ fontSize: 10, color: textSub }}>
           {error ? "Hors ligne" : lastUpdate ? `${lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Connexion..."}
         </span>
       </div>
+
+      {/* Panneau de route (glisse depuis le bas quand un véhicule est sélectionné) */}
+      {selectedVehicleObj && (
+        <RoutePanel
+          theme={theme}
+          vehicle={selectedVehicleObj}
+          nextStopInfo={nextStops?.get(selectedVehicleObj.id)}
+          onClose={onDeselect}
+        />
+      )}
     </div>
   );
 }
