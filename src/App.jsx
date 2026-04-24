@@ -122,7 +122,11 @@ export default function CarteTAM() {
         const message = FeedMessage.decode(new Uint8Array(buffer));
 
         const positions = message.entity
-          .filter(e => e.vehicle && e.vehicle.position)
+          .filter(e => e.vehicle && e.vehicle.position &&
+            e.vehicle.position.latitude != null &&
+            e.vehicle.position.longitude != null &&
+            e.vehicle.position.latitude !== 0 &&
+            e.vehicle.position.longitude !== 0)
           .map(e => {
             const veh = e.vehicle;
             const trip = veh.trip || {};
@@ -389,7 +393,7 @@ export default function CarteTAM() {
           ))}
 
           {/* Véhicules */}
-          {sortedVehicles.map(v => (
+          {sortedVehicles.filter(v => v.lat != null && v.lon != null).map(v => (
             <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => handleVehicleClick(v)} />
           ))}
 
