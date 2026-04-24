@@ -138,7 +138,7 @@ export default function WimT() {
           ...(activeTab === "live" ? { display: "none" } : {}),
         }}>
           {activeTab === "arret" && (
-            <ArretPanel theme={t} vehicules={vehicules} />
+            <ArretPanel theme={t} routesMap={gtfsRef.current?.routes} />
           )}
           {activeTab === "lignes" && (
             <LignesPanel theme={t} groupedVehicles={groupedVehicles} onVehicleClick={handleVehicleClick} selectedVehicle={selectedVehicle} />
