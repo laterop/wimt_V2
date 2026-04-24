@@ -155,22 +155,38 @@ async function decodeTripUpdate() {
     const msg = FM.decode(new Uint8Array(buf));
     const entities = msg.entity || [];
     const withStu = entities.filter(e => e.tripUpdate?.stopTimeUpdate?.length > 0);
-    const sample = withStu.slice(0, 3).map(e => {
+
+    // Affiche les 3 premières entités brutes (avec ou sans stopTimeUpdate)
+    const rawSample = entities.slice(0, 3).map(e => {
       const tu = e.tripUpdate;
-      return {
-        trip_id: tu.trip?.tripId,
-        route_id: tu.trip?.routeId,
-        stop_time_updates: (tu.stopTimeUpdate || []).slice(0, 4).map(s => ({
+      const raw = { entity_id: e.id };
+      if (tu) {
+        raw.trip = tu.trip ? {
+          trip_id: tu.trip.tripId,
+          route_id: tu.trip.routeId,
+          direction_id: tu.trip.directionId,
+          schedule_relationship: tu.trip.scheduleRelationship,
+        } : null;
+        raw.stop_time_update_count = (tu.stopTimeUpdate || []).length;
+        raw.stop_time_updates = (tu.stopTimeUpdate || []).slice(0, 3).map(s => ({
           stop_id: s.stopId,
-          stop_seq: s.stopSequence,
-          arrival: longVal(s.arrival?.time),
-          departure: longVal(s.departure?.time),
-        }))
-      };
+          stop_seq: longVal(s.stopSequence),
+          arrival_time: longVal(s.arrival?.time),
+          departure_time: longVal(s.departure?.time),
+          schedule_relationship: s.scheduleRelationship,
+        }));
+        // Dump ALL fields of the tripUpdate object to see hidden fields
+        raw.tripUpdate_keys = Object.keys(tu).filter(k => tu[k] !== null && tu[k] !== undefined);
+      } else {
+        raw.vehicle = e.vehicle ? { id: e.vehicle.vehicle?.id, position: e.vehicle.position } : null;
+        raw.alert = e.alert ? '(alert present)' : null;
+      }
+      return raw;
     });
-    out.innerHTML = `<span class="ok">✅ ${entities.length} entités | ${withStu.length} avec stopTimeUpdate</span>\n\n${JSON.stringify(sample, null, 2)}`;
+
+    out.innerHTML = `<span class="ok">✅ ${entities.length} entités | ${withStu.length} avec stopTimeUpdate</span>\n\n<span class="warn">── 3 entités brutes ──</span>\n${JSON.stringify(rawSample, null, 2)}`;
   } catch(e) {
-    out.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+    out.innerHTML = `<span class="err">❌ ${e.message}\n${e.stack}</span>`;
   }
 }
 
