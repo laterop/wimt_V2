@@ -7,6 +7,7 @@ import { getTheme } from "./theme";
 import MapView from "./components/MapView";
 import ArretPanel from "./components/ArretPanel";
 import AboutPanel from "./components/AboutPanel";
+import SplashScreen from "./components/SplashScreen";
 
 const FILTER_CHIPS = [
   { key: "showTrams",    label: "🚊 Trams",   activeColor: "#60a5fa", activeBg: "rgba(0,116,201,0.18)" },
@@ -32,6 +33,8 @@ const TABS = [
 ];
 
 export default function WimT() {
+  const [showSplash, setShowSplash] = useState(true);
+
   const { vehicules, lastUpdate, error, gtfsRef } = useVehicles();
   const nextStops = useNextStop(vehicules);
 
@@ -120,6 +123,8 @@ export default function WimT() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: t.bg, fontFamily: "'Inter',system-ui,sans-serif", overflow: "hidden" }}>
+
+      {showSplash && <SplashScreen onEnter={() => setShowSplash(false)} />}
 
       {/* ── Header ── */}
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", height: 52, background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, flexShrink: 0, zIndex: 20 }}>
