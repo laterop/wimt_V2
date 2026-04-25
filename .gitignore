@@ -3,3 +3,6 @@ dist/
 .DS_Store
 .env
 .env.local
+
+# Artefact de génération obsolète (remplacé par stop-meta.json)
+public/stop-index.json

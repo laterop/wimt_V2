@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import { useVehicles } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
 import { getTheme } from "./theme";
-import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import ArretPanel from "./components/ArretPanel";
 import AboutPanel from "./components/AboutPanel";

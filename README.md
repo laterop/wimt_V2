@@ -1,81 +1,199 @@
-# 🚍 TAM Live
+# WimT — Where is my TaM
 
-Carte en temps réel des trams et bus du réseau TAM de Montpellier, basée sur l'open data GTFS-RT de Montpellier Méditerranée Métropole.
+Carte temps réel des trams et bus du réseau TAM de Montpellier, basée sur l'open data GTFS-RT de Montpellier Méditerranée Métropole.
 
-![TAM Live preview](https://img.shields.io/badge/status-live-22c55e?style=flat-square) ![Vite](https://img.shields.io/badge/Vite-6-646cff?style=flat-square&logo=vite&logoColor=white) ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react&logoColor=black) ![Vercel](https://img.shields.io/badge/Vercel-deployed-black?style=flat-square&logo=vercel)
+![status](https://img.shields.io/badge/status-live-22c55e?style=flat-square)
+![React 18](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react&logoColor=black)
+![Vite 6](https://img.shields.io/badge/Vite-6-646cff?style=flat-square&logo=vite&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-deployed-black?style=flat-square&logo=vercel)
 
 ---
 
 ## Fonctionnalités
 
-- **Positions en temps réel** des véhicules TAM (trams, bus, BRT), rafraîchies toutes les 8 secondes
-- **Carte interactive** avec thème clair et sombre (fond CartoDB)
-- **Sidebar** avec regroupement par ligne, filtrage par numéro ou direction, tri par vitesse
-- **Statut des véhicules** : en mouvement ou à l'arrêt, vitesse en km/h
-- **Export CSV** de la liste des véhicules affichés
-- **Serverless-ready** : déployable sur Vercel sans serveur dédié
+- **Positions en temps réel** des trams, BRT et bus (rafraîchissement toutes les 8 secondes)
+- **Marqueurs directionnels** avec cône de vision orienté selon le cap du véhicule
+- **Diagramme de ligne** horizontal (style intérieur tram) : tous les véhicules d'une ligne positionnés sur leur séquence d'arrêts en temps réel
+- **Panneau Arrêt** : saisir un nom d'arrêt, voir les prochains passages avec localisation du véhicule sur la carte
+- **Panneau Lignes** : liste de toutes les lignes en service avec regroupement
+- **Filtres** : afficher/masquer trams, BRT, bus, tracé de ligne, arrêts
+- **Thème clair/sombre** persisté en localStorage
+- **Fond de carte CartoDB** (Dark Matter / Positron selon le thème)
 
-## Stack
+---
 
-- [React 18](https://react.dev) + [Vite 6](https://vitejs.dev)
-- [React-Leaflet](https://react-leaflet.js.org) pour la carte
-- [Tailwind CSS](https://tailwindcss.com)
-- Vercel Serverless Functions pour le proxy GTFS-RT
-- Données open data [Montpellier 3M](https://data.montpellier3m.fr)
+## Architecture
+
+```
+Flux GTFS-RT (TAM)
+        │
+        ▼
+Cloudflare Worker          ← proxy CORS, hébergé sur workers.dev
+(cloudflare-worker/worker.js)
+        │
+        ▼
+useVehicles (hook React)   ← décode le protobuf client-side via protobufjs
+        │  +  GTFS statique (routes.txt, trips.txt)
+        ▼
+useNextStop (hook React)   ← calcul géométrique du prochain arrêt
+        │  +  gtfs-data.json (séquences d'arrêts pré-générées)
+        ▼
+App.jsx                    ← état global, routing par onglets
+   ├── MapView              ← carte Leaflet + marqueurs + RoutePanel
+   │     ├── VehicleMarker  ← marqueur SVG avec cône de direction
+   │     └── RoutePanel     ← diagramme horizontal de ligne
+   ├── ArretPanel           ← recherche d'arrêt + prochains passages
+   ├── AboutPanel           ← infos légales et sources
+   └── LignesPanel          ← liste des lignes actives (inline dans App.jsx)
+```
+
+---
+
+## Pipeline des données
+
+### 1. Positions en temps réel (GTFS-RT)
+
+Le flux `VehiclePosition.pb` de la TAM est un binaire protobuf. Il ne peut pas être consommé directement depuis le navigateur à cause des restrictions CORS. Un **Cloudflare Worker** (`cloudflare-worker/worker.js`) sert de proxy transparent : il relaie la requête vers les serveurs TAM et ajoute les headers CORS nécessaires.
+
+Le hook `useVehicles` charge en parallèle le flux live et les fichiers GTFS statiques (`routes.txt`, `trips.txt`) pour enrichir chaque position avec le nom de ligne, la couleur, la destination et le type de véhicule.
+
+### 2. Calcul du prochain arrêt
+
+La TAM publie un flux `TripUpdate.pb` censé donner les temps de passage prévus, mais ce flux retourne en réalité les mêmes données que `VehiclePosition.pb` (aucun `StopTimeUpdate`). L'application calcule donc le prochain arrêt **géométriquement** :
+
+1. `generate-gtfs-data.mjs` pré-génère `public/gtfs-data.json` à partir du GTFS statique : pour chaque ligne et direction, une séquence ordonnée d'arrêts avec leurs coordonnées GPS.
+2. Le hook `useNextStop` compare la position GPS de chaque véhicule à cette séquence, en tenant compte du cap (`bearing`) pour déterminer dans quelle direction il se déplace.
+3. Détection "à l'arrêt" : distance < 60 m ET vitesse < 2 km/h.
+
+### 3. Données des arrêts (panneau Arrêt)
+
+Le script `build-stop-index.js` (exécuté automatiquement au `npm run build`) génère :
+
+- `public/stop-meta.json` — 322 noms d'arrêts distincts avec le type (tram/BRT/bus) et les identifiants GTFS associés. Utilisé pour la recherche.
+- `public/stops/{stop_id}.json` — un fichier par arrêt (906 fichiers) avec les prochains passages de la journée en cours. Chargé à la demande lors de la sélection d'un arrêt.
+
+---
+
+## Structure du projet
+
+```
+wimt/
+├── cloudflare-worker/
+│   └── worker.js              Proxy CORS Cloudflare (à déployer sur workers.dev)
+├── public/
+│   ├── gtfs-realtime.proto    Schéma protobuf GTFS-RT
+│   ├── routes.txt             GTFS statique — lignes
+│   ├── trips.txt              GTFS statique — trajets
+│   ├── stops.txt              GTFS statique — arrêts (coordonnées)
+│   ├── stop_times.txt         GTFS statique — horaires par arrêt
+│   ├── LigneTram.json         Tracés géographiques des lignes tram (open data MMM)
+│   ├── BusLigne.json          Tracés géographiques des lignes bus
+│   ├── ArretsTram.json        Arrêts tram avec coordonnées (open data MMM)
+│   ├── ArretsBus.json         Arrêts bus avec coordonnées
+│   ├── gtfs-data.json         Séquences d'arrêts par ligne/direction (généré par scripts/)
+│   ├── stop-meta.json         Index de recherche des arrêts (généré au build)
+│   └── stops/                 Un JSON par arrêt avec les horaires du jour (généré au build)
+├── scripts/
+│   ├── build-stop-index.js    Génère stop-meta.json + stops/*.json (lancé à chaque build)
+│   └── generate-gtfs-data.mjs Génère gtfs-data.json (à relancer après mise à jour GTFS)
+├── src/
+│   ├── App.jsx                Composant racine — état global, onglets, filtres
+│   ├── theme.js               Palette de couleurs clair/sombre
+│   ├── index.css              Reset CSS minimal
+│   ├── main.jsx               Point d'entrée React
+│   ├── hooks/
+│   │   ├── useVehicles.js     Fetch GTFS-RT + décodage protobuf + enrichissement GTFS
+│   │   ├── useNextStop.js     Calcul géométrique du prochain arrêt par véhicule
+│   │   └── useGTFS.js         Chargement et cache des fichiers GTFS statiques
+│   └── components/
+│       ├── MapView.jsx        Carte Leaflet — marqueurs, overlays, barre de recherche
+│       ├── VehicleMarker.jsx  Marqueur SVG directionnel avec cône de vision
+│       ├── RoutePanel.jsx     Diagramme horizontal de ligne (tous les véhicules actifs)
+│       ├── ArretPanel.jsx     Recherche d'arrêt et affichage des prochains passages
+│       └── AboutPanel.jsx     Mentions légales et sources de données
+├── index.html
+├── vite.config.js
+├── vercel.json
+└── package.json
+```
+
+---
 
 ## Lancer en local
 
 ```bash
+# Cloner et installer les dépendances
+git clone https://github.com/laterop/wimt_V2.git
+cd wimt_V2
 npm install
 
-# Terminal 1 : proxy GTFS-RT
-node server.js
-
-# Terminal 2 : frontend
+# Lancer le serveur de développement
 npm run dev
 ```
 
-L'app sera disponible sur `http://localhost:5173`. Le proxy tourne sur le port `3001`.
+L'app sera disponible sur `http://localhost:5173`. Elle se connecte directement au proxy Cloudflare en production.
 
-## Déployer sur Vercel
+Pour pointer vers un proxy local, créer un fichier `.env.local` :
+
+```
+VITE_GTFS_RT_URL=http://localhost:8787
+```
+
+Puis lancer le worker avec [Wrangler](https://developers.cloudflare.com/workers/wrangler/) :
+
+```bash
+npx wrangler dev cloudflare-worker/worker.js
+```
+
+---
+
+## Déployer
+
+### Frontend — Vercel
 
 ```bash
 npm i -g vercel
 vercel --prod
 ```
 
-Ou importer directement le repo depuis [vercel.com](https://vercel.com). Le fichier `vercel.json` est déjà configuré, aucun réglage supplémentaire n'est nécessaire.
+Ou importer le repo depuis [vercel.com](https://vercel.com). Le fichier `vercel.json` est déjà configuré.
 
-## Structure du projet
+### Proxy CORS — Cloudflare Workers
 
-```
-wimt/
-├── api/
-│   └── vehicles.js        # Serverless function Vercel (proxy GTFS-RT)
-├── data/
-│   ├── routes.txt          # Données statiques GTFS (lignes)
-│   └── trips.txt           # Données statiques GTFS (trajets)
-├── public/
-│   └── gtfs-realtime.proto # Schéma protobuf GTFS-RT
-├── src/
-│   ├── App.jsx             # Composant principal
-│   ├── main.jsx
-│   └── index.css
-├── server.js               # Proxy Express pour le dev local
-├── vercel.json
-└── vite.config.js
+```bash
+cd cloudflare-worker
+npx wrangler deploy worker.js --name tam-proxy
 ```
 
-## Source des données
-
-Les positions des véhicules sont récupérées depuis le flux GTFS-RT public de la TAM :
-
-```
-https://data.montpellier3m.fr/TAM_MMM_GTFSRT/VehiclePosition.pb
-```
-
-Les fichiers `routes.txt` et `trips.txt` proviennent du GTFS statique de la TAM, téléchargeable sur [data.montpellier3m.fr](https://data.montpellier3m.fr).
+L'URL du worker déployé doit ensuite être renseignée dans la variable d'environnement `VITE_GTFS_RT_URL` sur Vercel.
 
 ---
 
-Fait avec ❤️ à Montpellier
+## Mettre à jour les données GTFS
+
+Les horaires et tracés sont publiés par la TAM sur [data.montpellier3m.fr](https://data.montpellier3m.fr). Après téléchargement d'un nouveau GTFS statique :
+
+```bash
+# 1. Remplacer les fichiers sources dans public/
+cp routes.txt trips.txt stops.txt stop_times.txt public/
+
+# 2. Regénérer les séquences d'arrêts (utilisées par useNextStop)
+node scripts/generate-gtfs-data.mjs
+
+# 3. Les fichiers stops/ et stop-meta.json sont regénérés automatiquement au prochain build
+npm run build
+```
+
+---
+
+## Sources de données
+
+| Source | Contenu | Licence |
+|--------|---------|---------|
+| [data.montpellier3m.fr](https://data.montpellier3m.fr) — GTFS-RT | Positions temps réel (VehiclePosition.pb) | Licence Ouverte Etalab |
+| [data.montpellier3m.fr](https://data.montpellier3m.fr) — GTFS statique | Horaires, arrêts, tracés de lignes | Licence Ouverte Etalab |
+| [OpenStreetMap](https://openstreetmap.org) / [CARTO](https://carto.com) | Fond de carte | ODbL / CARTO |
+
+---
+
+Fait avec ❤️ à Montpellier — licence MIT
