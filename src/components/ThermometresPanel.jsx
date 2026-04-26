@@ -68,7 +68,7 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
           fontSize: 12, fontWeight: 700, padding: "0 7px", flexShrink: 0,
         }}>{lineKey}</div>
         <span style={{ fontSize: 11, color: t.textSub }}>
-          {type === "tram" ? "Tramway" : type === "bustram" ? "BRT" : "Bus"}
+          {type === "tram" ? "Tramway" : type === "bustram" ? "BusTram" : "Bus"}
         </span>
         <span style={{ fontSize: 11, color, fontWeight: 600, marginLeft: "auto" }}>
           {vehicles.length} véhicule{vehicles.length > 1 ? "s" : ""}
@@ -223,7 +223,7 @@ export default function ThermometresPanel({ theme: t, vehicules, nextStops, onVe
       if (!map[v.route_short_name]) map[v.route_short_name] = [];
       map[v.route_short_name].push(v);
     }
-    // Trier : trams (1-5) d'abord, BRT (A), puis bus numériques
+    // Trier : trams (1-5) d'abord, BusTram (A), puis bus numériques
     return Object.entries(map).sort(([a, va], [b, vb]) => {
       const typeOrder = { tram: 0, bustram: 1, bus: 2 };
       const ta = typeOrder[va[0].vehicleType] ?? 2;

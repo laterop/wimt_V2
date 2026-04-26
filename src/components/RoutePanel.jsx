@@ -140,7 +140,7 @@ export default function RoutePanel({
 
         {/* Type */}
         <span style={{ fontSize: 11, color: t.textSub }}>
-          {selectedLine.type === "tram" ? "Tramway" : selectedLine.type === "bustram" ? "BRT" : "Bus"}
+          {selectedLine.type === "tram" ? "Tramway" : selectedLine.type === "bustram" ? "BusTram" : "Bus"}
         </span>
 
         {/* Compteur véhicules */}

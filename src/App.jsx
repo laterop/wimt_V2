@@ -16,7 +16,7 @@ const AboutPanel         = lazy(() => import("./components/AboutPanel"));
 
 const FILTER_CHIPS = [
   { key: "showTrams",    label: "🚊 Trams",   activeColor: "#60a5fa", activeBg: "rgba(0,116,201,0.18)" },
-  { key: "showBustrams", label: "🚌 BRT",      activeColor: "#f9a8b8", activeBg: "rgba(132,25,49,0.2)"  },
+  { key: "showBustrams", label: "🚌 BusTram",      activeColor: "#f9a8b8", activeBg: "rgba(132,25,49,0.2)"  },
   { key: "showBus",      label: "🚌 Bus",      activeColor: "#fbbf24", activeBg: "rgba(180,83,9,0.18)"  },
 ];
 
@@ -264,7 +264,7 @@ export default function WimT() {
         <div style={{ position: "fixed", bottom: selectedLine ? 176 : 64, right: 14, zIndex: 1000, display: "flex", flexDirection: "column", gap: 4, transition: "bottom 0.25s ease" }}>
           {[
             { label: "Trams", value: vehicules.filter(v => v.vehicleType === "tram").length,    color: "#3b8eea" },
-            { label: "BRT",   value: vehicules.filter(v => v.vehicleType === "bustram").length, color: "#e87fa3" },
+            { label: "BusTram",   value: vehicules.filter(v => v.vehicleType === "bustram").length, color: "#e87fa3" },
             { label: "Bus",   value: vehicules.filter(v => v.vehicleType === "bus").length,     color: theme === "dark" ? "#fbbf24" : "#b45309" },
           ].map(s => (
             <div key={s.label} style={{ background: t.panelBg === "#ffffff" ? "rgba(255,255,255,0.88)" : "rgba(15,17,23,0.82)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `0.5px solid ${t.border}`, borderRadius: 10, padding: "4px 9px", display: "flex", alignItems: "center", gap: 6 }}>
@@ -313,7 +313,7 @@ function LignesPanel({ theme: t, groupedVehicles, onVehicleClick, selectedVehicl
             <div key={line} style={{ marginBottom: 2 }}>
               <div style={{ padding: "6px 16px 4px", display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ minWidth: 28, height: 22, borderRadius: 7, background: lc, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", padding: "0 6px" }}>{line}</div>
-                <span style={{ fontSize: 12, color: t.textSub }}>{type === "tram" ? "Tramway" : type === "bustram" ? "BRT" : "Bus"}</span>
+                <span style={{ fontSize: 12, color: t.textSub }}>{type === "tram" ? "Tramway" : type === "bustram" ? "BusTram" : "Bus"}</span>
                 <span style={{ marginLeft: "auto", fontSize: 11, color: lc, fontWeight: 600 }}>{vehicles.length} véhicules</span>
               </div>
               {vehicles.map(v => (

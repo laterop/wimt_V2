@@ -113,7 +113,7 @@ function findVehicle(vehicules, nextStops, passage, stopId) {
 
 const TYPE_CONFIG = {
   tram: { label: "Tram", icon: "🚊", color: "#3b8eea", bg: "rgba(59,142,234,0.12)" },
-  brt:  { label: "BRT",  icon: "🚌", color: "#e87fa3", bg: "rgba(232,127,163,0.12)" },
+  brt:  { label: "BusTram",  icon: "🚌", color: "#e87fa3", bg: "rgba(232,127,163,0.12)" },
   bus:  { label: "Bus",  icon: "🚌", color: "#fbbf24", bg: "rgba(251,191,36,0.12)" },
 };
 
@@ -329,7 +329,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
         {!selectedGroup && (
           <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
             {[null, "tram", "brt", "bus"].map(type => {
-              const labels = { null: "Tous", tram: "🚊 Tram", brt: "🚌 BRT", bus: "🚌 Bus" };
+              const labels = { null: "Tous", tram: "🚊 Tram", brt: "🚌 BusTram", bus: "🚌 Bus" };
               const colors = { tram: "#3b8eea", brt: "#e87fa3", bus: "#fbbf24" };
               const isActive = listTypeFilter === type;
               const color = type ? colors[type] : t.accent;
@@ -582,7 +582,7 @@ function StopList({ t, stops, onSelect }) {
             <span style={{ display: "flex", gap: 4, flexShrink: 0 }}>
               {types.map(type => (
                 <span key={type} style={{ fontSize: 10, fontWeight: 700, color: TYPE_COLORS[type], background: `${TYPE_COLORS[type]}18`, borderRadius: 5, padding: "2px 5px" }}>
-                  {type === "tram" ? "Tram" : type === "brt" ? "BRT" : "Bus"}
+                  {type === "tram" ? "Tram" : type === "brt" ? "BusTram" : "Bus"}
                 </span>
               ))}
             </span>

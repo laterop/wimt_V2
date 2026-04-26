@@ -163,7 +163,7 @@ export default function SplashScreen({ onEnter }) {
 
               {[
                 { emoji: "🚊", label: "Trams",       value: stats.trams, color: "#3b8eea" },
-                { emoji: "🚌", label: "BRT",         value: stats.brt,   color: "#e87fa3" },
+                { emoji: "🚌", label: "BusTram",         value: stats.brt,   color: "#e87fa3" },
                 { emoji: "🚌", label: "Bus",         value: stats.bus,   color: "#f59e0b" },
               ].map(({ emoji, label, value, color }) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>

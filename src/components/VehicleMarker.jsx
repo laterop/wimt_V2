@@ -116,7 +116,7 @@ export default function VehicleMarker({ v, isSelected, onClick, isDark }) {
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>Ligne {v.route_short_name}</div>
                 <div style={{ fontSize: 10, opacity: 0.82, marginTop: 1 }}>
-                  {v.vehicleType === "tram" ? "Tramway" : v.vehicleType === "bustram" ? "BRT" : "Bus"}
+                  {v.vehicleType === "tram" ? "Tramway" : v.vehicleType === "bustram" ? "BusTram" : "Bus"}
                 </div>
               </div>
               <div style={{ fontSize: 20 }}>{v.vehicleType === "tram" ? "🚊" : "🚌"}</div>
