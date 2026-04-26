@@ -95,9 +95,9 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
           .sort((a, b) => a.progress - b.progress);
 
         // Largeur par arrêt réduite — les labels sont inclinés, ils ne prennent plus de largeur
-        const STOP_W  = 44;
+        const STOP_W  = 52;
         const RAIL_Y  = 36;   // position verticale de la rail (px depuis le haut)
-        const DIAGRAM_H = 130; // hauteur totale : rail + espace pour labels à 45°
+        const DIAGRAM_H = 155; // hauteur totale : rail + espace pour labels à 45°
         const totalW  = fullSequence.length * STOP_W;
 
         return (
@@ -151,7 +151,7 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
                         top: RAIL_Y + 10,
                         transformOrigin: "top left",
                         transform: "rotate(45deg)",
-                        fontSize: isFirst || isLast || isNextForSome ? 10 : 9,
+                        fontSize: isFirst || isLast || isNextForSome ? 12 : 11,
                         fontWeight: isFirst || isLast ? 700 : isNextForSome ? 600 : 400,
                         color: isNextForSome ? color : isFirst || isLast ? t.textSub : t.textHint,
                         whiteSpace: "nowrap",
