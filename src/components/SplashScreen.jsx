@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import protobuf from "protobufjs";
 import { getTheme } from "../theme";
+import { BASE } from "../base.js";
 
 // Tente de charger les stats live depuis le proxy Cloudflare
 // On réutilise la même URL que useVehicles
@@ -8,8 +9,8 @@ const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://tam-proxy.drive
 
 async function fetchStats() {
   const [routesText, protoText] = await Promise.all([
-    fetch("/routes.txt").then(r => r.text()),
-    fetch("/gtfs-realtime.proto").then(r => r.text()),
+    fetch(`${BASE}routes.txt`).then(r => r.text()),
+    fetch(`${BASE}gtfs-realtime.proto`).then(r => r.text()),
   ]);
 
   // Parse routes pour avoir les couleurs et types

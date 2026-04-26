@@ -2,13 +2,14 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { countStopsAway } from "../hooks/useNextStop";
+import { BASE } from "../base.js";
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
 let metaCache = null;
 async function loadMeta() {
   if (metaCache) return metaCache;
-  const data = await fetch("/stop-meta.json").then(r => r.json());
+  const data = await fetch(`${BASE}stop-meta.json`).then(r => r.json());
   metaCache = data;
   return data;
 }
@@ -158,7 +159,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
     if (!stopId) return;
     setLoading(true);
     try {
-      const data = await fetch(`/stops/${stopId}.json`).then(r => {
+      const data = await fetch(`${BASE}stops/${stopId}.json`).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       });

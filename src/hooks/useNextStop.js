@@ -3,11 +3,12 @@
 // à partir des séquences d'arrêts GTFS et de la position GPS.
 
 import { useState, useEffect, useRef } from "react";
+import { BASE } from "../base.js";
 
 let gtfsDataCache = null;
 async function loadGtfsData() {
   if (gtfsDataCache) return gtfsDataCache;
-  gtfsDataCache = await fetch("/gtfs-data.json").then(r => r.json());
+  gtfsDataCache = await fetch(`${BASE}gtfs-data.json`).then(r => r.json());
   return gtfsDataCache;
 }
 

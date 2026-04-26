@@ -4,6 +4,7 @@
 // "segments" = liste de polylines (une ligne peut avoir aller + retour = 2 segments)
 
 import { useState, useEffect } from "react";
+import { BASE } from "../base.js";
 
 let cache = null;
 
@@ -11,9 +12,9 @@ async function loadAllTraces() {
   if (cache) return cache;
 
   const [ligneTram, lignesBus, routesText] = await Promise.all([
-    fetch("/LigneTram.json").then(r => r.json()),
-    fetch("/BusLigne.json").then(r => r.json()),
-    fetch("/routes.txt").then(r => r.text()),
+    fetch(`${BASE}LigneTram.json`).then(r => r.json()),
+    fetch(`${BASE}BusLigne.json`).then(r => r.json()),
+    fetch(`${BASE}routes.txt`).then(r => r.text()),
   ]);
 
   // Couleurs officielles depuis routes.txt (hex sans #)

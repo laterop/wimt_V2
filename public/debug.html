@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>WimT Debug</title>
+<style>
+  body { font-family: monospace; background: #0f1117; color: #f0f2f7; padding: 20px; font-size: 13px; }
+  h2 { color: #3b8eea; margin: 20px 0 8px; font-size: 14px; }
+  button { background: #1e2130; border: 1px solid #3b8eea; color: #3b8eea; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin: 4px; font-size: 12px; }
+  button:hover { background: #3b8eea; color: #fff; }
+  pre { background: #1e2130; border: 1px solid #2a2d3a; border-radius: 8px; padding: 14px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 500px; overflow-y: auto; font-size: 11px; line-height: 1.6; }
+  .ok { color: #22c55e; } .err { color: #ef4444; } .warn { color: #f59e0b; }
+  input { background: #1e2130; border: 1px solid #2a2d3a; color: #f0f2f7; padding: 5px 10px; border-radius: 6px; font-size: 12px; width: 200px; }
+  .section { margin-bottom: 30px; border: 1px solid #2a2d3a; border-radius: 10px; padding: 16px; }
+</style>
+</head>
+<body>
+<h1 style="color:#f0f2f7;font-size:16px;">🛠 WimT Debug Panel</h1>
+
+<!-- ── 1. stops.txt ── -->
+<div class="section">
+  <h2>1. stops.txt</h2>
+  <button onclick="testStops()">Charger stops.txt</button>
+  <pre id="out-stops">En attente...</pre>
+</div>
+
+<!-- ── 2. Worker VehiclePosition ── -->
+<div class="section">
+  <h2>2. Worker → VehiclePosition.pb</h2>
+  <input id="worker-url" value="https://tam-proxy.drivedemerde.workers.dev" placeholder="URL du worker"/>
+  <button onclick="testWorker('vehicle')">Tester ?feed=vehicle</button>
+  <button onclick="testWorker('tripupdate')">Tester ?feed=tripupdate</button>
+  <pre id="out-worker">En attente...</pre>
+</div>
+
+<!-- ── 3. Decode protobuf VehiclePosition ── -->
+<div class="section">
+  <h2>3. Decode VehiclePosition (premiers véhicules)</h2>
+  <button onclick="decodeVehicles()">Décoder</button>
+  <pre id="out-vehicles">En attente...</pre>
+</div>
+
+<!-- ── 4. Decode TripUpdate ── -->
+<div class="section">
+  <h2>4. Decode TripUpdate (premiers trips)</h2>
+  <button onclick="decodeTripUpdate()">Décoder</button>
+  <pre id="out-trips">En attente...</pre>
+</div>
+
+<!-- ── 5. Recherche stop_id ── -->
+<div class="section">
+  <h2>5. Passages pour un stop_id</h2>
+  <input id="stop-id-input" value="" placeholder="stop_id (ex: 5, 20, 100)"/>
+  <button onclick="searchStop()">Chercher dans TripUpdate</button>
+  <pre id="out-stop-search">En attente...</pre>
+</div>
+
+<script>
+const WORKER = () => document.getElementById('worker-url').value.trim();
+
+// ── 1. stops.txt ──────────────────────────────────────────────────────────────
+async function testStops() {
+  const out = document.getElementById('out-stops');
+  out.textContent = 'Chargement...';
+  try {
+    const res = await fetch('/stops.txt');
+    const raw = await res.text();
+    const clean = raw.replace(/^\uFEFF/, '').replace(/\r/g, '');
+    const lines = clean.split('\n').filter(l => l.trim());
+    const headers = lines[0].split(',');
+    const first5 = lines.slice(1, 6).map(l => {
+      const cols = l.split(',');
+      const obj = {};
+      headers.forEach((h, i) => obj[h.trim()] = (cols[i] || '').trim());
+      return obj;
+    });
+    out.innerHTML = `<span class="ok">✅ ${lines.length - 1} arrêts chargés</span>\n\nHeaders: ${JSON.stringify(headers)}\n\nPremiers arrêts:\n${JSON.stringify(first5, null, 2)}`;
+  } catch(e) {
+    out.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+  }
+}
+
+// ── 2. Worker ─────────────────────────────────────────────────────────────────
+async function testWorker(feed) {
+  const out = document.getElementById('out-worker');
+  const url = `${WORKER()}?feed=${feed}`;
+  out.textContent = `Requête vers ${url}...`;
+  try {
+    const res = await fetch(url);
+    const buf = await res.arrayBuffer();
+    out.innerHTML = `<span class="ok">✅ Status: ${res.status} | Taille: ${buf.byteLength} octets | feed=${feed}</span>\n\nHeaders réponse:\n${[...res.headers.entries()].map(([k,v])=>`  ${k}: ${v}`).join('\n')}`;
+  } catch(e) {
+    out.innerHTML = `<span class="err">❌ ${e.message}</span>\n\nURL testée: ${url}`;
+  }
+}
+
+// ── Charge proto ──────────────────────────────────────────────────────────────
+let FeedMessage = null;
+async function getProto() {
+  if (FeedMessage) return FeedMessage;
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/protobufjs@7/dist/protobuf.min.js';
+  document.head.appendChild(script);
+  await new Promise(r => script.onload = r);
+  const protoText = await fetch('/gtfs-realtime.proto').then(r => r.text());
+  const root = protobuf.parse(protoText).root;
+  FeedMessage = root.lookupType('transit_realtime.FeedMessage');
+  return FeedMessage;
+}
+
+function longVal(v) {
+  if (v == null) return null;
+  if (typeof v === 'object' && v.low != null) return v.low;
+  return Number(v);
+}
+
+// ── 3. Decode VehiclePosition ─────────────────────────────────────────────────
+async function decodeVehicles() {
+  const out = document.getElementById('out-vehicles');
+  out.textContent = 'Décodage...';
+  try {
+    const FM = await getProto();
+    const buf = await fetch(`${WORKER()}?feed=vehicle`).then(r => r.arrayBuffer());
+    const msg = FM.decode(new Uint8Array(buf));
+    const entities = (msg.entity || []).filter(e => e.vehicle?.position);
+    const sample = entities.slice(0, 5).map(e => {
+      const v = e.vehicle;
+      return {
+        id: v.vehicle?.id,
+        route_id: v.trip?.routeId,
+        trip_id: v.trip?.tripId,
+        lat: v.position?.latitude,
+        lon: v.position?.longitude,
+        speed: v.position?.speed,
+        direction_id: v.trip?.directionId,
+        timestamp: longVal(v.timestamp),
+      };
+    });
+    out.innerHTML = `<span class="ok">✅ ${entities.length} véhicules avec position</span>\n\n${JSON.stringify(sample, null, 2)}`;
+  } catch(e) {
+    out.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+  }
+}
+
+// ── 4. Decode TripUpdate ──────────────────────────────────────────────────────
+async function decodeTripUpdate() {
+  const out = document.getElementById('out-trips');
+  out.textContent = 'Décodage TripUpdate...';
+  try {
+    const FM = await getProto();
+    const res = await fetch(`${WORKER()}?feed=tripupdate`);
+    if (!res.ok) { out.innerHTML = `<span class="err">❌ HTTP ${res.status} - le worker ne supporte peut-être pas encore ?feed=tripupdate</span>`; return; }
+    const buf = await res.arrayBuffer();
+    out.textContent = `Buffer reçu: ${buf.byteLength} octets. Décodage...`;
+    const msg = FM.decode(new Uint8Array(buf));
+    const entities = msg.entity || [];
+    const withStu = entities.filter(e => e.tripUpdate?.stopTimeUpdate?.length > 0);
+
+    // Affiche les 3 premières entités brutes (avec ou sans stopTimeUpdate)
+    const rawSample = entities.slice(0, 3).map(e => {
+      const tu = e.tripUpdate;
+      const raw = { entity_id: e.id };
+      if (tu) {
+        raw.trip = tu.trip ? {
+          trip_id: tu.trip.tripId,
+          route_id: tu.trip.routeId,
+          direction_id: tu.trip.directionId,
+          schedule_relationship: tu.trip.scheduleRelationship,
+        } : null;
+        raw.stop_time_update_count = (tu.stopTimeUpdate || []).length;
+        raw.stop_time_updates = (tu.stopTimeUpdate || []).slice(0, 3).map(s => ({
+          stop_id: s.stopId,
+          stop_seq: longVal(s.stopSequence),
+          arrival_time: longVal(s.arrival?.time),
+          departure_time: longVal(s.departure?.time),
+          schedule_relationship: s.scheduleRelationship,
+        }));
+        // Dump ALL fields of the tripUpdate object to see hidden fields
+        raw.tripUpdate_keys = Object.keys(tu).filter(k => tu[k] !== null && tu[k] !== undefined);
+      } else {
+        raw.vehicle = e.vehicle ? { id: e.vehicle.vehicle?.id, position: e.vehicle.position } : null;
+        raw.alert = e.alert ? '(alert present)' : null;
+      }
+      return raw;
+    });
+
+    out.innerHTML = `<span class="ok">✅ ${entities.length} entités | ${withStu.length} avec stopTimeUpdate</span>\n\n<span class="warn">── 3 entités brutes ──</span>\n${JSON.stringify(rawSample, null, 2)}`;
+  } catch(e) {
+    out.innerHTML = `<span class="err">❌ ${e.message}\n${e.stack}</span>`;
+  }
+}
+
+// ── 5. Passages par stop_id ───────────────────────────────────────────────────
+async function searchStop() {
+  const out = document.getElementById('out-stop-search');
+  const stopId = document.getElementById('stop-id-input').value.trim();
+  if (!stopId) { out.textContent = 'Entre un stop_id'; return; }
+  out.textContent = `Recherche stop_id="${stopId}" dans TripUpdate...`;
+  try {
+    const FM = await getProto();
+    const res = await fetch(`${WORKER()}?feed=tripupdate`);
+    if (!res.ok) { out.innerHTML = `<span class="err">❌ HTTP ${res.status}</span>`; return; }
+    const buf = await res.arrayBuffer();
+    const msg = FM.decode(new Uint8Array(buf));
+    const now = Math.floor(Date.now() / 1000);
+    const results = [];
+
+    for (const entity of (msg.entity || [])) {
+      const tu = entity.tripUpdate;
+      if (!tu?.stopTimeUpdate) continue;
+      for (const stu of tu.stopTimeUpdate) {
+        if (String(stu.stopId).trim() !== stopId) continue;
+        const dep = stu.departure || stu.arrival;
+        const ts = longVal(dep?.time);
+        const mins = ts ? Math.round((ts - now) / 60) : null;
+        results.push({
+          trip_id: tu.trip?.tripId,
+          route_id: (tu.trip?.routeId || '').replace(/^.*:/, ''),
+          stop_sequence: stu.stopSequence,
+          arrival_ts: longVal(stu.arrival?.time),
+          departure_ts: longVal(stu.departure?.time),
+          mins_from_now: mins,
+        });
+      }
+    }
+
+    results.sort((a, b) => (a.departure_ts || 0) - (b.departure_ts || 0));
+    if (results.length === 0) {
+      out.innerHTML = `<span class="warn">⚠️ Aucun passage trouvé pour stop_id="${stopId}"</span>\n\nVérifie que le stop_id est correct (voir stops.txt ci-dessus)`;
+    } else {
+      out.innerHTML = `<span class="ok">✅ ${results.length} passages trouvés pour stop_id="${stopId}"</span>\n\n${JSON.stringify(results.slice(0, 15), null, 2)}`;
+    }
+  } catch(e) {
+    out.innerHTML = `<span class="err">❌ ${e.message}</span>`;
+  }
+}
+</script>
+</body>
+</html>
