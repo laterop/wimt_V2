@@ -127,8 +127,6 @@ function FlyTo({ position }) {
   return null;
 }
 
-const POPULAR = ["Corum", "Comédie", "Gare Saint-Roch", "Mosson", "Odysseum", "Place de France"];
-
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export default function ArretPanel({ theme: t, vehicules = [], nextStops = new Map(), onTrackVehicle }) {
@@ -136,23 +134,41 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
   const [allMeta, setAllMeta]           = useState([]);     // [{name, entries:[{id,lat,lon,types}]}]
   const [suggestions, setSuggestions]   = useState([]);
   const [showDrop, setShowDrop]         = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState(null); // une entrée du meta (nom + entries)
-  const [selectedEntry, setSelectedEntry] = useState(null); // {id, lat, lon, types}
-  const [activeType, setActiveType]     = useState(null);   // "tram"|"brt"|"bus" sélectionné
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [activeType, setActiveType]     = useState(null);
   const [passages, setPassages]         = useState([]);
   const [loading, setLoading]           = useState(false);
   const [loadedAt, setLoadedAt]         = useState(null);
+  const [listTypeFilter, setListTypeFilter] = useState(null); // filtre type sur la liste
   const mapRef = useRef(null);
 
   useEffect(() => { loadMeta().then(setAllMeta); }, []);
 
-  // Suggestions
+  // Suggestions dropdown (seulement quand un arrêt est déjà sélectionné, sinon on utilise la liste)
   useEffect(() => {
+    if (selectedGroup) {
+      const q = query.trim().toLowerCase();
+      if (q.length < 2) { setSuggestions([]); return; }
+      const res = allMeta.filter(m => m.name.toLowerCase().includes(q)).slice(0, 8);
+      setSuggestions(res);
+    } else {
+      setSuggestions([]);
+    }
+  }, [query, allMeta, selectedGroup]);
+
+  // Liste filtrée (utilisée quand aucun arrêt sélectionné)
+  const filteredList = useMemo(() => {
+    let list = allMeta;
+    if (listTypeFilter) {
+      list = list.filter(m => m.entries.some(e => e.types.includes(listTypeFilter)));
+    }
     const q = query.trim().toLowerCase();
-    if (q.length < 2) { setSuggestions([]); return; }
-    const res = allMeta.filter(m => m.name.toLowerCase().includes(q)).slice(0, 8);
-    setSuggestions(res);
-  }, [query, allMeta]);
+    if (q.length >= 1) {
+      list = list.filter(m => m.name.toLowerCase().includes(q));
+    }
+    return list;
+  }, [allMeta, query, listTypeFilter]);
 
   // Charger les passages pour un stop_id
   const fetchPassages = useCallback(async (stopId) => {
@@ -284,8 +300,9 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: t.bg }}>
 
-      {/* ── Recherche ── */}
+      {/* ── Recherche + filtres ── */}
       <div style={{ padding: "12px 14px 10px", background: t.panelBg, borderBottom: `0.5px solid ${t.border}`, position: "relative", zIndex: 50 }}>
+        {/* Barre de recherche */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: t.inputBg, borderRadius: 12, padding: "10px 14px", border: `0.5px solid ${showSugg ? t.accent : t.borderStrong}`, transition: "border-color 0.15s" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.textHint} strokeWidth="2.5" style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -308,6 +325,25 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
           )}
         </div>
 
+        {/* Chips de filtre par type */}
+        {!selectedGroup && (
+          <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+            {[null, "tram", "brt", "bus"].map(type => {
+              const labels = { null: "Tous", tram: "🚊 Tram", brt: "🚌 BRT", bus: "🚌 Bus" };
+              const colors = { tram: "#3b8eea", brt: "#e87fa3", bus: "#fbbf24" };
+              const isActive = listTypeFilter === type;
+              const color = type ? colors[type] : t.accent;
+              return (
+                <button key={String(type)} onClick={() => setListTypeFilter(type)}
+                  style={{ padding: "5px 12px", borderRadius: 20, border: `1.5px solid ${isActive ? color : t.border}`, background: isActive ? `${color}22` : "transparent", cursor: "pointer", fontSize: 11, fontWeight: isActive ? 700 : 400, color: isActive ? color : t.textSub, fontFamily: "'Inter',system-ui,sans-serif", transition: "all 0.15s" }}>
+                  {labels[type]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Dropdown suggestions (uniquement quand un arrêt est déjà sélectionné) */}
         {showSugg && (
           <div style={{ position: "absolute", top: "calc(100% - 2px)", left: 14, right: 14, background: t.panelBg, borderRadius: "0 0 14px 14px", border: `0.5px solid ${t.borderStrong}`, borderTop: "none", boxShadow: "0 12px 32px rgba(0,0,0,0.18)", zIndex: 200, overflow: "hidden" }}>
             {suggestions.map((s, i) => {
@@ -342,7 +378,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
 
       {/* ── Contenu ── */}
       {!selectedGroup ? (
-        <EmptyState t={t} onSelect={selectByName} />
+        <StopList t={t} stops={filteredList} onSelect={selectGroup} />
       ) : (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
@@ -515,28 +551,44 @@ function PassageRow({ p, t, isFirst, matchResult, stopName, onTrack }) {
   );
 }
 
-// ─── État vide ────────────────────────────────────────────────────────────────
+// ─── Liste de tous les arrêts ─────────────────────────────────────────────────
 
-function EmptyState({ t, onSelect }) {
+function StopList({ t, stops, onSelect }) {
+  const TYPE_COLORS = { tram: "#3b8eea", brt: "#e87fa3", bus: "#fbbf24" };
+  const TYPE_LABELS = { tram: "T", brt: "B", bus: "🚌" };
+
+  if (stops.length === 0) {
+    return (
+      <div style={{ padding: "40px 20px", textAlign: "center", color: t.textHint, fontSize: 13 }}>
+        Aucun arrêt trouvé
+      </div>
+    );
+  }
+
   return (
-    <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px" }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: t.textHint, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 12 }}>Arrêts populaires</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
-        {POPULAR.map(name => (
-          <button key={name} onClick={() => onSelect(name)}
-            style={{ padding: "8px 14px", borderRadius: 20, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", fontSize: 13, color: t.textSub, fontFamily: "'Inter',system-ui,sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill={t.accent} stroke="none">
+    <div style={{ flex: 1, overflowY: "auto" }}>
+      {stops.map((stop, i) => {
+        const typesSet = new Set(stop.entries.flatMap(e => e.types));
+        const types = ["tram", "brt", "bus"].filter(t => typesSet.has(t));
+        return (
+          <button key={stop.name + i} onClick={() => onSelect(stop)}
+            style={{ width: "100%", padding: "11px 16px", background: "none", border: "none", borderBottom: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, textAlign: "left", fontFamily: "'Inter',system-ui,sans-serif" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill={t.textHint} stroke="none" style={{ flexShrink: 0 }}>
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
-            {name}
+            <span style={{ fontSize: 13, color: t.text, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {stop.name}
+            </span>
+            <span style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+              {types.map(type => (
+                <span key={type} style={{ fontSize: 10, fontWeight: 700, color: TYPE_COLORS[type], background: `${TYPE_COLORS[type]}18`, borderRadius: 5, padding: "2px 5px" }}>
+                  {type === "tram" ? "Tram" : type === "brt" ? "BRT" : "Bus"}
+                </span>
+              ))}
+            </span>
           </button>
-        ))}
-      </div>
-      <div style={{ padding: "24px 20px", background: t.cardBg, borderRadius: 16, border: `0.5px solid ${t.border}`, textAlign: "center" }}>
-        <div style={{ fontSize: 32, marginBottom: 10 }}>🚏</div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: t.text, marginBottom: 8 }}>Prochains passages</div>
-        <div style={{ fontSize: 12, color: t.textSub, lineHeight: 1.7 }}>Recherche un arrêt pour voir les prochains passages avec l'heure exacte.</div>
-      </div>
+        );
+      })}
     </div>
   );
 }
