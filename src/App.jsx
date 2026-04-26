@@ -1,13 +1,18 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from "react";
 import "leaflet/dist/leaflet.css";
 
 import { useVehicles } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
 import { getTheme } from "./theme";
-import MapView from "./components/MapView";
-import ArretPanel from "./components/ArretPanel";
-import AboutPanel from "./components/AboutPanel";
 import SplashScreen from "./components/SplashScreen";
+
+// ── Lazy imports : chaque onglet charge son code à la première visite ──────────
+const MapView            = lazy(() => import("./components/MapView"));
+const ArretPanel         = lazy(() => import("./components/ArretPanel"));
+const ThermometresPanel  = lazy(() => import("./components/ThermometresPanel"));
+const AboutPanel         = lazy(() => import("./components/AboutPanel"));
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const FILTER_CHIPS = [
   { key: "showTrams",    label: "🚊 Trams",   activeColor: "#60a5fa", activeBg: "rgba(0,116,201,0.18)" },
@@ -25,12 +30,37 @@ function TabIcon({ d, active, color }) {
   );
 }
 
+// Icône thermomètre custom (SVG path)
+function ThermomIcon({ active, color }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+      stroke={active ? color : "currentColor"} strokeWidth={active ? 2.2 : 1.8}
+      style={{ display: "block" }}>
+      <path d="M12 2v10.5"/>
+      <circle cx="12" cy="17" r="3"/>
+      <path d="M9 12.5a3 3 0 0 0 0 4.5"/>
+      <path d="M9 5h6M9 8h6"/>
+    </svg>
+  );
+}
+
 const TABS = [
-  { id: "live",    label: "Live",    icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" },
-  { id: "arret",   label: "Arrêt",   icon: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" },
-  { id: "lignes",  label: "Lignes",  icon: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" },
-  { id: "about",   label: "Infos",   icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" },
+  { id: "live",         label: "Live",    icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" },
+  { id: "thermo",       label: "Lignes",  icon: null /* custom */ },
+  { id: "arret",        label: "Arrêt",   icon: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" },
+  { id: "about",        label: "Infos",   icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" },
 ];
+
+// Fallback minimal pendant le lazy load
+function TabLoader({ theme: t }) {
+  return (
+    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: t.textHint, fontSize: 12 }}>
+      Chargement…
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function WimT() {
   const [showSplash, setShowSplash] = useState(true);
@@ -42,9 +72,8 @@ export default function WimT() {
   const [activeTab, setActiveTab] = useState("live");
   const [filtreLigne, setFiltreLigne] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [selectedLine, setSelectedLine] = useState(null);  // { short_name, color, text_color, type }
+  const [selectedLine, setSelectedLine] = useState(null);
   const [selectedRouteData, setSelectedRouteData] = useState(null);
-  const [sortBy] = useState("ligne");
   const [filters, setFilters] = useState({
     showTrams: true, showBustrams: true, showBus: true,
     showStops: false,
@@ -53,9 +82,7 @@ export default function WimT() {
   const mapRef = useRef(null);
   const t = getTheme(theme === "dark");
 
-  useEffect(() => {
-    localStorage.setItem("wimt-theme", theme);
-  }, [theme]);
+  useEffect(() => { localStorage.setItem("wimt-theme", theme); }, [theme]);
 
   const toggleFilter = useCallback((key) => setFilters(prev => ({ ...prev, [key]: !prev[key] })), []);
 
@@ -63,7 +90,6 @@ export default function WimT() {
     setSelectedVehicle(v.id);
     setActiveTab("live");
     if (mapRef.current) mapRef.current.flyTo([v.lat, v.lon], 16, { duration: 0.8 });
-    // Sélectionner aussi la ligne entière
     setSelectedLine({
       short_name: v.route_short_name,
       color: v.route_color,
@@ -113,13 +139,11 @@ export default function WimT() {
   }, {});
 
   const selectedVehicleObj = vehicules.find(v => v.id === selectedVehicle);
-
-  // Tous les véhicules de la ligne sélectionnée (les deux sens)
   const lineVehicles = selectedLine
     ? vehicules.filter(v => v.route_short_name === selectedLine.short_name)
     : [];
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isLiveTab = activeTab === "live";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: t.bg, fontFamily: "'Inter',system-ui,sans-serif", overflow: "hidden" }}>
@@ -144,61 +168,68 @@ export default function WimT() {
       {/* ── Corps ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
 
-        {/* Panneau liste (desktop gauche / mobile bas sheet) */}
+        {/* Panneau latéral (tous les onglets non-carte) */}
         <div style={{
-          width: activeTab === "live" ? 300 : "100%",
-          minWidth: activeTab !== "live" ? "100%" : undefined,
+          width: isLiveTab ? 0 : "100%",
           background: t.panelBg,
-          borderRight: activeTab === "live" ? `0.5px solid ${t.border}` : "none",
-          display: "flex",
+          display: isLiveTab ? "none" : "flex",
           flexDirection: "column",
           overflow: "hidden",
           flexShrink: 0,
-          transition: "width 0.2s",
-          // Sur mobile on masque la liste quand on est sur "live"
-          ...(activeTab === "live" ? { display: "none" } : {}),
         }}>
-          {activeTab === "arret" && (
-            <ArretPanel
-              theme={t}
-              vehicules={vehicules}
-              nextStops={nextStops}
-              onTrackVehicle={(v) => {
-                setActiveTab("live");
-                handleVehicleClick(v);
-              }}
-            />
-          )}
-          {activeTab === "lignes" && (
-            <LignesPanel theme={t} groupedVehicles={groupedVehicles} onVehicleClick={handleVehicleClick} selectedVehicle={selectedVehicle} />
-          )}
-          {activeTab === "about" && (
-            <AboutPanel theme={t} />
-          )}
+          <Suspense fallback={<TabLoader theme={t} />}>
+            {activeTab === "thermo" && (
+              <ThermometresPanel
+                theme={t}
+                vehicules={vehicules}
+                nextStops={nextStops}
+                onVehicleClick={handleVehicleClick}
+              />
+            )}
+            {activeTab === "arret" && (
+              <ArretPanel
+                theme={t}
+                vehicules={vehicules}
+                nextStops={nextStops}
+                onTrackVehicle={(v) => { setActiveTab("live"); handleVehicleClick(v); }}
+              />
+            )}
+            {activeTab === "lignes" && (
+              <LignesPanel
+                theme={t}
+                groupedVehicles={groupedVehicles}
+                onVehicleClick={handleVehicleClick}
+                selectedVehicle={selectedVehicle}
+              />
+            )}
+            {activeTab === "about" && <AboutPanel theme={t} />}
+          </Suspense>
         </div>
 
-        {/* Carte (toujours visible sur live, cachée sur les autres onglets mobile) */}
-        <div style={{ flex: 1, display: activeTab === "live" ? "flex" : "none", flexDirection: "column", minWidth: 0 }}>
-          <MapView
-            theme={t}
-            sortedVehicles={sortedVehicles}
-            selectedVehicle={selectedVehicle}
-            selectedVehicleObj={selectedVehicleObj}
-            selectedLine={selectedLine}
-            lineVehicles={lineVehicles}
-            selectedRouteData={selectedRouteData}
-            filters={filters}
-            mapRef={mapRef}
-            onVehicleClick={handleVehicleClick}
-            onDeselect={handleDeselect}
-            filtreLigne={filtreLigne}
-            setFiltreLigne={setFiltreLigne}
-            filterChips={FILTER_CHIPS}
-            toggleFilter={toggleFilter}
-            lastUpdate={lastUpdate}
-            error={error}
-            nextStops={nextStops}
-          />
+        {/* Carte (toujours montée pour garder Leaflet vivant, cachée sur les autres onglets) */}
+        <div style={{ flex: 1, display: isLiveTab ? "flex" : "none", flexDirection: "column", minWidth: 0 }}>
+          <Suspense fallback={<TabLoader theme={t} />}>
+            <MapView
+              theme={t}
+              sortedVehicles={sortedVehicles}
+              selectedVehicle={selectedVehicle}
+              selectedVehicleObj={selectedVehicleObj}
+              selectedLine={selectedLine}
+              lineVehicles={lineVehicles}
+              selectedRouteData={selectedRouteData}
+              filters={filters}
+              mapRef={mapRef}
+              onVehicleClick={handleVehicleClick}
+              onDeselect={handleDeselect}
+              filtreLigne={filtreLigne}
+              setFiltreLigne={setFiltreLigne}
+              filterChips={FILTER_CHIPS}
+              toggleFilter={toggleFilter}
+              lastUpdate={lastUpdate}
+              error={error}
+              nextStops={nextStops}
+            />
+          </Suspense>
         </div>
       </div>
 
@@ -218,15 +249,18 @@ export default function WimT() {
                 transition: "color 0.15s",
               }}
             >
-              <TabIcon d={tab.icon} active={isActive} color={t.accent} />
+              {tab.id === "thermo"
+                ? <ThermomIcon active={isActive} color={t.accent} />
+                : <TabIcon d={tab.icon} active={isActive} color={t.accent} />
+              }
               {tab.label}
             </button>
           );
         })}
       </nav>
 
-      {/* Stats flottantes sur la carte (Live uniquement) */}
-      {activeTab === "live" && (
+      {/* Stats flottantes (Live uniquement) */}
+      {isLiveTab && (
         <div style={{ position: "fixed", bottom: selectedLine ? 176 : 64, right: 14, zIndex: 1000, display: "flex", flexDirection: "column", gap: 4, transition: "bottom 0.25s ease" }}>
           {[
             { label: "Trams", value: vehicules.filter(v => v.vehicleType === "tram").length,    color: "#3b8eea" },
@@ -264,6 +298,7 @@ export default function WimT() {
   );
 }
 
+// ── LignesPanel (gardé inline car très léger) ─────────────────────────────────
 function LignesPanel({ theme: t, groupedVehicles, onVehicleClick, selectedVehicle }) {
   return (
     <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -295,4 +330,3 @@ function LignesPanel({ theme: t, groupedVehicles, onVehicleClick, selectedVehicl
     </div>
   );
 }
-
