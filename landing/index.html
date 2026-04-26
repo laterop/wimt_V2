@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WimT — Where is my TaM</title>
+  <meta name="description" content="Carte temps réel des trams et bus TAM de Montpellier. Positions live, prochains arrêts, diagrammes de lignes." />
+  <meta property="og:title" content="WimT — Where is my TaM" />
+  <meta property="og:description" content="Carte temps réel du réseau TAM de Montpellier." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0d13;
+      --panel:     #13151e;
+      --card:      #1a1d28;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #f0f2f7;
+      --sub:       #7a7f94;
+      --hint:      #4a4f62;
+      --accent:    #0074c9;
+      --accent2:   #00b4d8;
+      --tram:      #3b8eea;
+      --brt:       #e87fa3;
+      --bus:       #f59e0b;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 56px;
+      background: rgba(11,13,19,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 0.5px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: linear-gradient(135deg, #0074c9, #00b4d8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-logo-text { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-link {
+      font-size: 13px; color: var(--sub); text-decoration: none;
+      padding: 6px 12px; border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,116,201,0.35);
+    }
+    .btn-ghost {
+      background: var(--card);
+      color: var(--text);
+      border: 0.5px solid var(--border);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 80px 24px 60px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,116,201,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -55%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px;
+      background: rgba(34,197,94,0.1); border: 0.5px solid rgba(34,197,94,0.25);
+      font-size: 12px; font-weight: 600; color: #22c55e;
+      margin-bottom: 28px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+    }
+    .hero h1 {
+      font-size: clamp(40px, 8vw, 76px);
+      font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--sub); line-height: 1.6;
+      max-width: 560px; margin: 0 auto 36px;
+    }
+    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 64px; }
+
+    /* ── Stats live ── */
+    .stats-row {
+      display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 0.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 22px;
+      display: flex; align-items: center; gap: 12px;
+      min-width: 130px;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(255,255,255,0.14); }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    .stat-label { font-size: 11px; color: var(--sub); margin-top: 1px; }
+
+    /* ── Features ── */
+    .section {
+      max-width: 1080px; margin: 0 auto;
+      padding: 80px 24px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 800; letter-spacing: -0.8px;
+      margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 15px; color: var(--sub); line-height: 1.6;
+      max-width: 520px; margin-bottom: 52px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 0.5px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .feature-desc { font-size: 13px; color: var(--sub); line-height: 1.6; }
+
+    /* ── Données ── */
+    .data-section { background: var(--panel); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+    .data-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0;
+    }
+    .data-item {
+      padding: 32px 28px;
+      border-right: 0.5px solid var(--border);
+    }
+    .data-item:last-child { border-right: none; }
+    .data-num { font-size: 36px; font-weight: 900; letter-spacing: -1px; color: var(--accent); }
+    .data-desc { font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.4; }
+
+    /* ── CTA final ── */
+    .cta-section {
+      text-align: center;
+      padding: 100px 24px;
+    }
+    .cta-section h2 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 900; letter-spacing: -1px; margin-bottom: 14px;
+    }
+    .cta-section p { font-size: 16px; color: var(--sub); margin-bottom: 36px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 0.5px solid var(--border);
+      padding: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    footer p { font-size: 12px; color: var(--hint); }
+    footer a { color: var(--sub); text-decoration: none; font-size: 12px; }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 20px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .nav-links .nav-link { display: none; }
+      .data-item { border-right: none; border-bottom: 0.5px solid var(--border); }
+      .data-item:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ── -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon">🚍</div>
+      <span class="nav-logo-text">WimT</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://github.com/laterop/wimt_V2" class="nav-link" target="_blank" rel="noopener">GitHub</a>
+      <a href="/carte/" class="btn btn-primary">Ouvrir la carte →</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Réseau TAM en direct
+    </div>
+
+    <h1>Where is my<br><span>TaM</span></h1>
+
+    <p class="hero-sub">
+      Carte temps réel des trams et bus de Montpellier. Positions live, prochains arrêts et diagrammes de lignes, basés sur l'open data TAM.
+    </p>
+
+    <div class="hero-cta">
+      <a href="/carte/" class="btn btn-primary" style="font-size:15px; padding:12px 24px;">
+        🗺️ Ouvrir la carte
+      </a>
+      <a href="https://github.com/laterop/wimt_V2" class="btn btn-ghost" target="_blank" rel="noopener">
+        GitHub ↗
+      </a>
+    </div>
+
+    <!-- Stats live -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div>
+          <div class="stat-value" id="stat-trams" style="color: var(--tram)">—</div>
+          <div class="stat-label">Trams</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-value" id="stat-brt" style="color: var(--brt)">—</div>
+          <div class="stat-label">BRT</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-value" id="stat-bus" style="color: var(--bus)">—</div>
+          <div class="stat-label">Bus</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-value" id="stat-lignes" style="color: var(--text)">—</div>
+          <div class="stat-label">Lignes actives</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section class="section">
+    <div class="section-label">Fonctionnalités</div>
+    <h2 class="section-title">Tout le réseau TAM,<br>en un coup d'œil</h2>
+    <p class="section-sub">Conçu pour les Montpelliérains qui veulent savoir exactement où est leur tram, sans ouvrir l'app officielle.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(59,142,234,0.15);">🗺️</div>
+        <div class="feature-title">Carte live</div>
+        <div class="feature-desc">Positions de tous les véhicules actualisées toutes les 8 secondes. Marqueurs directionnels avec cône de vision.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,116,201,0.15);">📊</div>
+        <div class="feature-title">Diagrammes de lignes</div>
+        <div class="feature-desc">Vue thermomètre style intérieur tram : tous les véhicules d'une ligne positionnés sur leur séquence d'arrêts.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.15);">📍</div>
+        <div class="feature-title">Prochains passages</div>
+        <div class="feature-desc">Cherchez un arrêt et voyez les prochains trams ou bus, avec la distance réelle du véhicule à votre arrêt.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(34,197,94,0.12);">⚡</div>
+        <div class="feature-title">Open data</div>
+        <div class="feature-desc">Données GTFS-RT publiques de Montpellier Méditerranée Métropole. Aucun compte requis, 100% open source.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Chiffres ── -->
+  <div class="data-section">
+    <div class="section" style="padding:0;">
+      <div class="data-grid">
+        <div class="data-item">
+          <div class="data-num">5</div>
+          <div class="data-desc">lignes de tramway<br>couvrant toute la métropole</div>
+        </div>
+        <div class="data-item">
+          <div class="data-num">30+</div>
+          <div class="data-desc">lignes de bus<br>urbaines et suburbaines</div>
+        </div>
+        <div class="data-item">
+          <div class="data-num">8s</div>
+          <div class="data-desc">fréquence de mise à jour<br>des positions en direct</div>
+        </div>
+        <div class="data-item">
+          <div class="data-num">0</div>
+          <div class="data-desc">donnée personnelle collectée,<br>aucun compte requis</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CTA final ── -->
+  <section class="cta-section">
+    <h2>Votre tram est là,<br>quelque part.</h2>
+    <p>Trouvez-le en 3 secondes.</p>
+    <a href="/carte/" class="btn btn-primary" style="font-size:15px; padding:14px 32px;">
+      Ouvrir la carte →
+    </a>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <p>WimT — fait avec ❤️ à Montpellier · Données <a href="https://data.montpellier3m.fr" target="_blank">open data TAM</a> · Licence Ouverte Etalab</p>
+    <div class="footer-links">
+      <a href="https://github.com/laterop/wimt_V2" target="_blank" rel="noopener">GitHub</a>
+      <a href="/carte/" >Carte</a>
+    </div>
+  </footer>
+
+  <!-- ── Stats live (JS vanilla) ── -->
+  <script>
+    // Décode le protobuf GTFS-RT pour récupérer les stats sans React ni dépendances
+    // Approche : fetch du binary, parsing manuel des champs protobuf (format wire type 2 pour les champs imbriqués)
+    // On utilise ici une version simplifiée : on fetch routes.txt + le proxy, on compte par type
+
+    const PROXY = 'https://tam-proxy.drivedemerde.workers.dev';
+
+    async function loadStats() {
+      try {
+        // Charger routes.txt pour connaitre le type de chaque route
+        const routesText = await fetch('/carte/routes.txt').then(r => r.text());
+        const routeTypes = new Map();
+        routesText.replace(/^\uFEFF/, '').split('\n').slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const cols = line.split(',');
+          const id    = cols[0]?.trim();
+          const short = cols[2]?.trim();
+          const type  = parseInt(cols[4]) || 3;
+          if (id) routeTypes.set(id, { short, type });
+        });
+
+        // Charger le proto et décoder
+        const [protoText, buf] = await Promise.all([
+          fetch('/carte/gtfs-realtime.proto').then(r => r.text()),
+          fetch(PROXY).then(r => r.arrayBuffer()),
+        ]);
+
+        // Décodage dynamique via protobufjs depuis CDN
+        const { default: protobuf } = await import('https://cdn.jsdelivr.net/npm/protobufjs@7/dist/protobuf.esm.js');
+        const root = protobuf.parse(protoText).root;
+        const FeedMessage = root.lookupType('transit_realtime.FeedMessage');
+        const msg = FeedMessage.decode(new Uint8Array(buf));
+
+        let trams = 0, brt = 0, bus = 0;
+        const lignes = new Set();
+
+        msg.entity.forEach(e => {
+          if (!e.vehicle?.position) return;
+          const rid = (e.vehicle.trip?.routeId || '').replace(/^.*:/, '').trim();
+          const r   = routeTypes.get(rid);
+          if (!r) return;
+          const name = r.short.toUpperCase();
+          lignes.add(name);
+          if (name === 'A')                                              brt++;
+          else if (r.type === 0 || ['1','2','3','4','5'].includes(name)) trams++;
+          else                                                           bus++;
+        });
+
+        document.getElementById('stat-trams').textContent  = trams;
+        document.getElementById('stat-brt').textContent    = brt;
+        document.getElementById('stat-bus').textContent    = bus;
+        document.getElementById('stat-lignes').textContent = lignes.size;
+
+      } catch (err) {
+        console.warn('Stats live non disponibles :', err.message);
+        ['stat-trams','stat-brt','stat-bus','stat-lignes'].forEach(id => {
+          document.getElementById(id).textContent = '?';
+          document.getElementById(id).style.color = 'var(--hint)';
+        });
+      }
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>

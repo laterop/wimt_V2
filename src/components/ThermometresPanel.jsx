@@ -94,8 +94,11 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
           .filter(x => x.progress >= 0)
           .sort((a, b) => a.progress - b.progress);
 
-        const STOP_W = 72;
-        const totalW = fullSequence.length * STOP_W;
+        // Largeur par arrêt réduite — les labels sont inclinés, ils ne prennent plus de largeur
+        const STOP_W  = 44;
+        const RAIL_Y  = 36;   // position verticale de la rail (px depuis le haut)
+        const DIAGRAM_H = 130; // hauteur totale : rail + espace pour labels à 45°
+        const totalW  = fullSequence.length * STOP_W;
 
         return (
           <div key={di} style={{ padding: "6px 14px 10px" }}>
@@ -107,14 +110,13 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
             </div>
 
             {/* Diagramme scrollable */}
-            <div style={{ overflowX: "auto", overflowY: "hidden", paddingBottom: 2 }}
-              className="wimt-thermo-scroll">
-              <div style={{ position: "relative", height: 64, minWidth: totalW }}>
+            <div style={{ overflowX: "auto", overflowY: "hidden" }} className="wimt-thermo-scroll">
+              <div style={{ position: "relative", height: DIAGRAM_H, minWidth: totalW }}>
 
                 {/* Rail */}
                 <div style={{
                   position: "absolute",
-                  top: 28, left: STOP_W / 2, right: STOP_W / 2,
+                  top: RAIL_Y, left: STOP_W / 2, right: STOP_W / 2,
                   height: 3, background: `${color}30`, borderRadius: 2,
                 }} />
 
@@ -123,47 +125,46 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
                   const isFirst = si === 0;
                   const isLast  = si === fullSequence.length - 1;
                   const isNextForSome = positioned.some(({ ns }) => ns?.seqIndex === si);
+                  const dotSize = isFirst || isLast ? 12 : isNextForSome ? 10 : 6;
+                  const dotLeft = si * STOP_W + STOP_W / 2;
+
                   return (
-                    <div key={stop.id ?? si} style={{
-                      position: "absolute",
-                      left: si * STOP_W,
-                      width: STOP_W,
-                      top: 0, height: "100%",
-                      display: "flex", flexDirection: "column", alignItems: "center",
-                    }}>
-                      {/* Point */}
+                    <div key={stop.id ?? si}>
+                      {/* Point d'arrêt */}
                       <div style={{
-                        marginTop: 21,
-                        width:  isFirst || isLast ? 12 : isNextForSome ? 10 : 6,
-                        height: isFirst || isLast ? 12 : isNextForSome ? 10 : 6,
+                        position: "absolute",
+                        left: dotLeft - dotSize / 2,
+                        top: RAIL_Y - dotSize / 2 + 1.5,
+                        width: dotSize, height: dotSize,
                         borderRadius: "50%",
                         background: isFirst || isLast || isNextForSome ? color : t.bg,
                         border: `2px solid ${isFirst || isLast || isNextForSome ? color : color + "55"}`,
                         boxShadow: isNextForSome ? `0 0 0 3px ${color}25` : "none",
-                        flexShrink: 0,
                         zIndex: 2,
                         transition: "all 0.2s",
                       }} />
-                      {/* Nom arrêt */}
-                      {(isFirst || isLast || si % Math.ceil(fullSequence.length / 5) === 0) && (
-                        <div style={{
-                          fontSize: 8,
-                          color: isFirst || isLast ? t.textSub : t.textHint,
-                          fontWeight: isFirst || isLast ? 600 : 400,
-                          textAlign: "center",
-                          marginTop: 3,
-                          maxWidth: STOP_W - 4,
-                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                          lineHeight: 1.2,
-                        }}>
-                          {stop.name}
-                        </div>
-                      )}
+
+                      {/* Label à 45° sous le point */}
+                      <div style={{
+                        position: "absolute",
+                        left: dotLeft + 2,
+                        top: RAIL_Y + 10,
+                        transformOrigin: "top left",
+                        transform: "rotate(45deg)",
+                        fontSize: isFirst || isLast || isNextForSome ? 10 : 9,
+                        fontWeight: isFirst || isLast ? 700 : isNextForSome ? 600 : 400,
+                        color: isNextForSome ? color : isFirst || isLast ? t.textSub : t.textHint,
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
+                        pointerEvents: "none",
+                      }}>
+                        {stop.name}
+                      </div>
                     </div>
                   );
                 })}
 
-                {/* Véhicules positionnés */}
+                {/* Véhicules positionnés (au-dessus de la rail) */}
                 {positioned.map(({ v, ns, progress }) => {
                   const left = STOP_W / 2 + progress * (totalW - STOP_W);
                   const isMoving = (v.speed ?? 0) > 0;
@@ -174,7 +175,7 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
                       title={`${v.headsign}${isMoving ? ` · ${Math.round(v.speed)} km/h` : " · arrêté"}`}
                       style={{
                         position: "absolute",
-                        left: left - 14,
+                        left: left - 18,
                         top: 0,
                         background: "none", border: "none", padding: 0,
                         cursor: "pointer",
@@ -186,20 +187,20 @@ function LineThermometre({ lineKey, vehicles, nextStops, theme: t, onVehicleClic
                       {/* Badge véhicule */}
                       <div style={{
                         background: color, color: fg,
-                        borderRadius: 8, padding: "2px 5px",
-                        fontSize: 9, fontWeight: 700,
-                        boxShadow: `0 1px 6px ${color}55`,
+                        borderRadius: 8, padding: "3px 7px",
+                        fontSize: 10, fontWeight: 700,
+                        boxShadow: `0 2px 8px ${color}55`,
                         whiteSpace: "nowrap",
                         display: "flex", alignItems: "center", gap: 3,
                       }}>
                         <span>{emoji}</span>
                         {isMoving
                           ? <span>{Math.round(v.speed)} km/h</span>
-                          : <span style={{ opacity: 0.8 }}>⏹</span>
+                          : <span style={{ opacity: 0.75 }}>⏹</span>
                         }
                       </div>
                       {/* Trait vers la rail */}
-                      <div style={{ width: 1.5, height: 8, background: color, opacity: 0.5 }} />
+                      <div style={{ width: 1.5, height: RAIL_Y - 22, background: color, opacity: 0.4 }} />
                     </button>
                   );
                 })}
