@@ -29,7 +29,7 @@ export default function AboutPanel({ theme: t }) {
         <div style={{ fontSize: 12, color: t.textSub, marginTop: 4 }}>Where is my TaM</div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, padding: "4px 12px", background: "rgba(0,116,201,0.1)", borderRadius: 20, border: "0.5px solid rgba(0,116,201,0.25)" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }}></span>
-          <span style={{ fontSize: 11, color: t.accent, fontWeight: 600 }}>Open Source</span>
+          <span style={{ fontSize: 11, color: t.accent, fontWeight: 600 }}>Open Source · v1.2.0</span>
         </div>
       </div>
 
@@ -44,6 +44,136 @@ export default function AboutPanel({ theme: t }) {
             </p>
           </>
         )
+      )}
+
+      {section("Comment ça marche",
+        <>
+          {[
+            {
+              icon: "📡",
+              title: "Mise à jour toutes les 8 secondes",
+              desc: "WimT interroge les serveurs Open Data de Montpellier Méditerranée Métropole via un proxy Cloudflare Workers pour récupérer le flux GTFS-RT. Ce flux contient la position GPS, la vitesse et la direction de chaque véhicule en service.",
+            },
+            {
+              icon: "📍",
+              title: "Calcul du prochain arrêt",
+              desc: "À partir de la position GPS du véhicule et des données horaires GTFS statiques (stop_times.txt), l'application calcule géométriquement l'arrêt le plus proche sur le trajet prévu et estime la progression entre deux arrêts.",
+            },
+            {
+              icon: "🗺️",
+              title: "Affichage sur la carte",
+              desc: "Chaque véhicule est représenté par un marqueur coloré avec le numéro de ligne. Un cône de direction indique le sens de déplacement. En cliquant sur un véhicule, tu vois la bande de ligne en bas avec sa position en temps réel.",
+            },
+          ].map(item => (
+            <div key={item.title} style={{ background: t.cardBg, borderRadius: 14, border: `0.5px solid ${t.border}`, padding: "14px 16px", marginBottom: 8, display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 22, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 4 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: t.textSub, lineHeight: 1.65 }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {section("Le réseau TAM",
+        <>
+          {card(
+            <>
+              <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 12 }}>Les lignes de tramway</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { num: "1", color: "#0074c9", fg: "#fff", from: "Mosson", to: "Odysseum" },
+                  { num: "2", color: "#e63946", fg: "#fff", from: "Saint-Jean-de-Védas Centre", to: "Jacou" },
+                  { num: "3", color: "#f4a261", fg: "#fff", from: "Juvignac", to: "Lattes Centre" },
+                  { num: "4", color: "#2a9d8f", fg: "#fff", from: "Mosson", to: "Garcia Lorca" },
+                  { num: "5", color: "#8338ec", fg: "#fff", from: "Saint-Clément-de-Rivière", to: "Gare Saint-Roch" },
+                ].map(l => (
+                  <div key={l.num} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 28, height: 22, borderRadius: 6, background: l.color, color: l.fg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{l.num}</div>
+                    <div style={{ fontSize: 12, color: t.textSub }}>
+                      <span style={{ color: t.text, fontWeight: 500 }}>{l.from}</span>
+                      <span style={{ margin: "0 5px", color: t.textHint }}>↔</span>
+                      <span style={{ color: t.text, fontWeight: 500 }}>{l.to}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {card(
+            <>
+              <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 12 }}>BusTram & Bus</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ minWidth: 28, height: 22, borderRadius: 6, background: "#00b4d8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, padding: "0 6px", flexShrink: 0 }}>A</div>
+                  <div style={{ fontSize: 12, color: t.textSub }}>
+                    BusTram à haut niveau de service. <span style={{ color: t.text, fontWeight: 500 }}>Clapiers ↔ Lattes</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: t.textSub, paddingLeft: 38, lineHeight: 1.6 }}>
+                  Le réseau bus TaM comprend plus de 30 lignes urbaines couvrant l'ensemble de la métropole, ainsi que des lignes de soirée et des navettes vers les zones d'activité.
+                </div>
+              </div>
+            </>
+          )}
+          {card(
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {[
+                { label: "5 lignes de tram", icon: "🚊" },
+                { label: "1 BusTram", icon: "🚌" },
+                { label: "+30 lignes de bus", icon: "🚍" },
+                { label: "~260 km²", icon: "📐", sub: "aire desservie" },
+              ].map(s => (
+                <div key={s.label} style={{ flex: "1 1 calc(50% - 10px)", background: t.inputBg, borderRadius: 10, border: `0.5px solid ${t.border}`, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span style={{ fontSize: 18 }}>{s.icon}</span>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: t.text, marginTop: 4 }}>{s.label}</div>
+                  {s.sub && <div style={{ fontSize: 10, color: t.textHint }}>{s.sub}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {section("Astuces d'utilisation",
+        <>
+          {[
+            {
+              icon: "🔍",
+              title: "Cliquer sur un véhicule",
+              desc: "Appuie sur n'importe quel marqueur sur la carte pour sélectionner un véhicule. La bande de ligne apparaît en bas avec sa position en temps réel sur le trajet.",
+            },
+            {
+              icon: "📊",
+              title: "Onglet Thermomètres",
+              desc: "Vue d'ensemble de toutes les lignes actives. Chaque ligne affiche ses véhicules positionnés sur un diagramme représentant le trajet. Clique sur un véhicule pour le retrouver sur la carte.",
+            },
+            {
+              icon: "🚏",
+              title: "Onglet Arrêts",
+              desc: "Recherche un arrêt par son nom et filtre par type (Tram, BusTram, Bus). Tape au moins une lettre pour lancer la recherche. Tu verras les prochains passages en temps réel.",
+            },
+            {
+              icon: "🌙",
+              title: "Thème clair / sombre",
+              desc: "Le bouton en haut à droite bascule entre le thème clair et sombre. Ton choix est sauvegardé localement sur ton appareil.",
+            },
+            {
+              icon: "📐",
+              title: "Naviguer sur la carte",
+              desc: "Pince pour zoomer, fais glisser pour te déplacer. La carte se centre automatiquement sur le véhicule sélectionné lors d'un clic depuis l'onglet Thermomètres.",
+            },
+          ].map(item => (
+            <div key={item.title} style={{ background: t.cardBg, borderRadius: 14, border: `0.5px solid ${t.border}`, padding: "14px 16px", marginBottom: 8, display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 3 }}>{item.title}</div>
+                <div style={{ fontSize: 12, color: t.textSub, lineHeight: 1.65 }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </>
       )}
 
       {section("Données & sources",
@@ -84,6 +214,69 @@ export default function AboutPanel({ theme: t }) {
               ))}
             </div>
           )}
+        </>
+      )}
+
+      {section("Changelog",
+        <>
+          {[
+            {
+              version: "v1.2.0",
+              date: "Avril 2026",
+              badge: "actuelle",
+              badgeColor: "#22c55e",
+              items: [
+                "Onglet Arrêts : liste complète avec recherche et filtres Tram/BusTram/Bus",
+                "Thermomètres : labels à 45°, taille de texte augmentée",
+                "Renommage BRT → BusTram dans toute l'interface",
+                "Page À propos complète",
+              ],
+            },
+            {
+              version: "v1.1.0",
+              date: "Mars 2026",
+              badge: null,
+              items: [
+                "Panneau de ligne horizontal (bande de route en bas de carte)",
+                "Onglet Thermomètres : vue synthétique toutes lignes",
+                "SplashScreen de chargement",
+                "Thème clair / sombre persistant",
+                "Proxy Cloudflare Workers pour contourner le CORS",
+              ],
+            },
+            {
+              version: "v1.0.0",
+              date: "Janvier 2026",
+              badge: null,
+              items: [
+                "Première version publique",
+                "Carte interactive avec marqueurs colorés par ligne",
+                "Cône de direction selon le bearing GPS",
+                "Calcul du prochain arrêt depuis GTFS statique",
+                "Mise à jour automatique toutes les 8 secondes",
+              ],
+            },
+          ].map(rel => (
+            <div key={rel.version} style={{ background: t.cardBg, borderRadius: 14, border: `0.5px solid ${t.border}`, padding: "14px 16px", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: t.text }}>{rel.version}</div>
+                {rel.badge && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: rel.badgeColor, background: `${rel.badgeColor}18`, border: `0.5px solid ${rel.badgeColor}44`, borderRadius: 10, padding: "1px 7px" }}>
+                    {rel.badge}
+                  </span>
+                )}
+                <span style={{ fontSize: 11, color: t.textHint, marginLeft: "auto" }}>{rel.date}</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {rel.items.map((item, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 10, color: t.accent, marginTop: 2, flexShrink: 0 }}>▸</span>
+                    <span style={{ fontSize: 12, color: t.textSub, lineHeight: 1.5 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </>
       )}
 
