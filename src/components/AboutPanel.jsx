@@ -81,20 +81,43 @@ export default function AboutPanel({ theme: t }) {
           {card(
             <>
               <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 12 }}>Les lignes de tramway</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {[
-                  { num: "1", color: "#0074c9", fg: "#fff", from: "Mosson", to: "Odysseum" },
-                  { num: "2", color: "#e63946", fg: "#fff", from: "Saint-Jean-de-Védas Centre", to: "Jacou" },
-                  { num: "3", color: "#f4a261", fg: "#fff", from: "Juvignac", to: "Lattes Centre" },
-                  { num: "4", color: "#2a9d8f", fg: "#fff", from: "Mosson", to: "Garcia Lorca" },
-                  { num: "5", color: "#8338ec", fg: "#fff", from: "Saint-Clément-de-Rivière", to: "Gare Saint-Roch" },
+                  {
+                    num: "1", color: "#0074c9", fg: "#fff",
+                    from: "Mosson", to: "Gare Sud de France",
+                    detail: "31 stations · 16,7 km · livrée bleue (Garouste & Bonetti)",
+                  },
+                  {
+                    num: "2", color: "#e07b00", fg: "#fff",
+                    from: "Saint-Jean-de-Védas Centre", to: "Jacou",
+                    detail: "28 stations · 17,5 km · livrée florale orange (Garouste & Bonetti)",
+                  },
+                  {
+                    num: "3", color: "#00965e", fg: "#fff",
+                    from: "Juvignac", to: "Pérols Étang de l'Or",
+                    detail: "Dessert aussi Lattes Centre · thème mer (Christian Lacroix)",
+                  },
+                  {
+                    num: "4", color: "#c8a000", fg: "#fff",
+                    from: "Mosson", to: "Garcia Lorca",
+                    detail: "Boucle autour de l'hypercentre · motifs dorés (Christian Lacroix)",
+                  },
+                  {
+                    num: "5", color: "#6b8c42", fg: "#fff",
+                    from: "Clapiers", to: "Grès de Montpellier",
+                    detail: "27 stations · 16,3 km · inaugurée déc. 2025 · thème botanique (Barthélémy Toguo)",
+                  },
                 ].map(l => (
-                  <div key={l.num} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 28, height: 22, borderRadius: 6, background: l.color, color: l.fg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{l.num}</div>
-                    <div style={{ fontSize: 12, color: t.textSub }}>
-                      <span style={{ color: t.text, fontWeight: 500 }}>{l.from}</span>
-                      <span style={{ margin: "0 5px", color: t.textHint }}>↔</span>
-                      <span style={{ color: t.text, fontWeight: 500 }}>{l.to}</span>
+                  <div key={l.num} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 7, background: l.color, color: l.fg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>{l.num}</div>
+                    <div>
+                      <div style={{ fontSize: 12, color: t.text }}>
+                        <span style={{ fontWeight: 600 }}>{l.from}</span>
+                        <span style={{ margin: "0 5px", color: t.textHint }}>↔</span>
+                        <span style={{ fontWeight: 600 }}>{l.to}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>{l.detail}</div>
                     </div>
                   </div>
                 ))}
@@ -104,15 +127,21 @@ export default function AboutPanel({ theme: t }) {
           {card(
             <>
               <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 12 }}>BusTram & Bus</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ minWidth: 28, height: 22, borderRadius: 6, background: "#00b4d8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, padding: "0 6px", flexShrink: 0 }}>A</div>
-                  <div style={{ fontSize: 12, color: t.textSub }}>
-                    BusTram à haut niveau de service. <span style={{ color: t.text, fontWeight: 500 }}>Clapiers ↔ Lattes</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <div style={{ minWidth: 28, height: 28, borderRadius: 7, background: "#00b4d8", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, padding: "0 4px", flexShrink: 0 }}>A</div>
+                  <div>
+                    <div style={{ fontSize: 12, color: t.text }}>
+                      <span style={{ fontWeight: 600 }}>Place de l'Europe</span>
+                      <span style={{ margin: "0 5px", color: t.textHint }}>↔</span>
+                      <span style={{ fontWeight: 600 }}>Notre-Dame-de-Sablassou</span>
+                      <span style={{ fontSize: 10, color: t.textHint }}> (Castelnau-le-Lez)</span>
+                    </div>
+                    <div style={{ fontSize: 10, color: t.textHint, marginTop: 2 }}>8 stations · inauguré mai 2025 · 1 passage toutes les 10 min · extension prévue vers Castries (2028)</div>
                   </div>
                 </div>
                 <div style={{ fontSize: 12, color: t.textSub, paddingLeft: 38, lineHeight: 1.6 }}>
-                  Le réseau bus TaM comprend plus de 30 lignes urbaines couvrant l'ensemble de la métropole, ainsi que des lignes de soirée et des navettes vers les zones d'activité.
+                  Le réseau bus TaM compte plus de 30 lignes urbaines desservant l'ensemble de la métropole, avec des lignes de soirée et des navettes vers les zones d'activité.
                 </div>
               </div>
             </>
@@ -120,10 +149,10 @@ export default function AboutPanel({ theme: t }) {
           {card(
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {[
-                { label: "5 lignes de tram", icon: "🚊" },
-                { label: "1 BusTram", icon: "🚌" },
-                { label: "+30 lignes de bus", icon: "🚍" },
-                { label: "~260 km²", icon: "📐", sub: "aire desservie" },
+                { label: "5 lignes de tram", icon: "🚊", sub: "72 km de rails" },
+                { label: "111 stations", icon: "🚏", sub: "tramway" },
+                { label: "1 BusTram (ligne A)", icon: "🚌", sub: "inauguré mai 2025" },
+                { label: "+30 lignes de bus", icon: "🚍", sub: "réseau urbain" },
               ].map(s => (
                 <div key={s.label} style={{ flex: "1 1 calc(50% - 10px)", background: t.inputBg, borderRadius: 10, border: `0.5px solid ${t.border}`, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
                   <span style={{ fontSize: 18 }}>{s.icon}</span>
