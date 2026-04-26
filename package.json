@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-stop-index.js && vite build && node scripts/build-landing.js",
+    "build": "node scripts/build-stop-index.js && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -3,7 +3,6 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/carte/:path*", "destination": "/carte/:path*" },
-    { "source": "/carte",        "destination": "/carte/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
