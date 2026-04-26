@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
 import RoutePanel from "./RoutePanel";
+import { useAllTraces } from "../hooks/useAllTraces";
 
 function FlyTo({ position }) {
   const map = useMap();
@@ -13,6 +14,7 @@ function FlyTo({ position }) {
 
 export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
+  const allTraces = useAllTraces();
 
   const glassPanel = {
     background: isDark ? "rgba(15,17,23,0.82)" : "rgba(255,255,255,0.88)",
@@ -21,6 +23,9 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
     border: `0.5px solid ${border}`,
     borderRadius: 14,
   };
+
+  // Paramètres visuels des tracés selon l'état de sélection
+  const hasSelection = !!selectedLine;
 
   return (
     <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
@@ -33,15 +38,40 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
       >
         <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={mapTile} />
 
-        {filters.showTrace && selectedRouteData?.trace?.length > 1 && (
-          <Polyline
-            key={`${selectedRouteData.short_name}-${selectedRouteData.color}`}
-            positions={selectedRouteData.trace}
-            color={`#${selectedRouteData.color}`}
-            weight={5} opacity={0.85}
-          />
-        )}
+        {/* ── Tracés permanents de toutes les lignes ── */}
+        {allTraces && [...allTraces.entries()].map(([num, { color, type, segments }]) => {
+          // Respecter les filtres de type
+          if (type === "tram"    && !filters.showTrams)    return null;
+          if (type === "bustram" && !filters.showBustrams) return null;
+          if (type === "bus"     && !filters.showBus)      return null;
 
+          const isSelected = hasSelection && selectedLine?.short_name === num;
+          const isDimmed   = hasSelection && !isSelected;
+
+          // Épaisseur : tram plus épais que bus, encore plus si sélectionné
+          const weight = isSelected
+            ? (type === "tram" || type === "bustram" ? 7 : 5)
+            : (type === "tram" || type === "bustram" ? 3.5 : 2);
+
+          // Opacité : mise en valeur de la ligne sélectionnée, atténuation des autres
+          const opacity = isSelected ? 0.95 : isDimmed ? 0.12 : (type === "bus" ? 0.45 : 0.6);
+
+          return segments.map((seg, si) =>
+            seg.length > 1 ? (
+              <Polyline
+                key={`${num}-${si}`}
+                positions={seg}
+                color={color}
+                weight={weight}
+                opacity={opacity}
+                lineCap="round"
+                lineJoin="round"
+              />
+            ) : null
+          );
+        })}
+
+        {/* Arrêts de la ligne sélectionnée (si filtre activé) */}
         {filters.showStops && selectedRouteData?.stops?.map((s, i) => (
           <CircleMarker key={i} center={[s.lat, s.lon]} radius={5} fillColor={`#${selectedRouteData.color}`} color="#fff" weight={2} fillOpacity={1}>
             <Popup>
@@ -53,6 +83,7 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
           </CircleMarker>
         ))}
 
+        {/* Marqueurs véhicules */}
         {sortedVehicles.filter(v => v.lat != null && v.lon != null).map(v => (
           <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} />
         ))}
@@ -108,19 +139,6 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
           >{label}</button>
         ))}
         <button
-          onClick={() => toggleFilter("showTrace")}
-          style={{
-            padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 500,
-            cursor: "pointer", border: `0.5px solid`, whiteSpace: "nowrap",
-            fontFamily: "'Inter',system-ui,sans-serif",
-            background: filters.showTrace ? (isDark ? "rgba(0,116,201,0.2)" : "rgba(0,116,201,0.12)") : (isDark ? "rgba(15,17,23,0.75)" : "rgba(255,255,255,0.8)"),
-            color: filters.showTrace ? "#3b8eea" : textSub,
-            borderColor: filters.showTrace ? "#3b8eea55" : border,
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-          }}
-        >Tracé</button>
-        <button
           onClick={() => toggleFilter("showStops")}
           style={{
             padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 500,
@@ -144,7 +162,6 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
         ))}
       </div>
 
-
       {/* Statut live */}
       <div style={{ position: "absolute", left: 14, bottom: selectedLine ? 170 : 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, transition: "bottom 0.25s ease" }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: error ? "#ef4444" : lastUpdate ? "#22c55e" : "#f59e0b", display: "block", flexShrink: 0 }}></span>
@@ -153,7 +170,7 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
         </span>
       </div>
 
-      {/* Panneau de route horizontal (glisse depuis le bas quand une ligne est sélectionnée) */}
+      {/* Panneau de route horizontal */}
       {selectedLine && (
         <RoutePanel
           theme={theme}

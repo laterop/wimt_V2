@@ -47,7 +47,7 @@ export default function WimT() {
   const [sortBy] = useState("ligne");
   const [filters, setFilters] = useState({
     showTrams: true, showBustrams: true, showBus: true,
-    showTrace: false, showStops: false,
+    showStops: false,
   });
 
   const mapRef = useRef(null);
