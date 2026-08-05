@@ -14,6 +14,7 @@ export default defineConfig({
         main:  r('index.html'),             // page d'accueil — choix du réseau
         carte: r('carte/index.html'),       // app carte temps réel (Montpellier)
         nimes: r('carte/nimes/index.html'), // app carte temps réel (Nîmes)
+        lio:   r('carte/lio/index.html'),   // app carte temps réel (liO Occitanie)
       },
     },
   },

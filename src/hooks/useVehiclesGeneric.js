@@ -1,14 +1,26 @@
 // useVehiclesGeneric.js
 // Variante de useVehicles.js pour les réseaux "GTFS standard" (hors Montpellier) :
-// le flux GTFS-RT est déjà exposé en JSON (proxy Cloudflare -> bus-tracker.fr),
-// pas de décodage protobuf nécessaire. Les métadonnées de ligne (couleur, nom,
-// destination) viennent de gtfs-data.json généré par scripts/build-network.mjs,
-// indexé par route_id (qui vaut route_short_name pour ces réseaux).
+// - format "json"     : le flux GTFS-RT est déjà exposé en JSON (ex: proxy -> bus-tracker.fr
+//                        pour Nîmes), pas de décodage nécessaire.
+// - format "protobuf"  : flux GTFS-RT binaire standard (ex: liO Occitanie), décodé côté
+//                        client avec protobufjs + gtfs-realtime.proto (comme Montpellier).
+// Les métadonnées de ligne (couleur, nom, destination) viennent de gtfs-data.json généré
+// par scripts/build-network.mjs, indexé par route_id (qui vaut route_short_name ici).
 
 import { useState, useEffect, useRef } from "react";
+import protobuf from "protobufjs";
 import { BASE } from "../base.js";
 
-export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, refreshMs = 8000 }) {
+let feedMessageTypeCache = null;
+async function getFeedMessageType() {
+  if (feedMessageTypeCache) return feedMessageTypeCache;
+  const protoText = await fetch(`${BASE}gtfs-realtime.proto`).then(r => r.text());
+  const root = protobuf.parse(protoText).root;
+  feedMessageTypeCache = root.lookupType("transit_realtime.FeedMessage");
+  return feedMessageTypeCache;
+}
+
+export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, format = "json", refreshMs = 8000 }) {
   const [vehicules, setVehicules] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [error, setError] = useState(null);
@@ -24,10 +36,22 @@ export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, refreshMs = 
         }
         const gtfsData = gtfsRef.current;
 
-        const msg = await fetch(vehiclePositionsUrl).then(r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json();
-        });
+        let msg;
+        if (format === "protobuf") {
+          const [FeedMessage, buf] = await Promise.all([
+            getFeedMessageType(),
+            fetch(vehiclePositionsUrl).then(r => {
+              if (!r.ok) throw new Error(`HTTP ${r.status}`);
+              return r.arrayBuffer();
+            }),
+          ]);
+          msg = FeedMessage.decode(new Uint8Array(buf));
+        } else {
+          msg = await fetch(vehiclePositionsUrl).then(r => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+          });
+        }
 
         const positions = (msg.entity || [])
           .filter(e =>
@@ -87,7 +111,7 @@ export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, refreshMs = 
     fetchData();
     const interval = setInterval(fetchData, refreshMs);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [dataBase, vehiclePositionsUrl, refreshMs]);
+  }, [dataBase, vehiclePositionsUrl, format, refreshMs]);
 
   return { vehicules, lastUpdate, error, gtfsRef };
 }

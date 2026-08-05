@@ -2,7 +2,8 @@
 // Variante de AboutPanel.jsx pour les réseaux "GTFS standard" (Nîmes, Perpignan...).
 
 export default function AboutPanelGeneric({ theme: t, network }) {
-  const { cityName, operator, tagline, dataSourceLabel, dataSourceUrl, rtCreditLabel, rtCreditUrl } = network;
+  const { cityName, operator, tagline, dataSourceLabel, dataSourceUrl, rtCreditLabel, rtCreditUrl, locationLabel } = network;
+  const loc = locationLabel || `à ${cityName}`;
 
   const section = (title, children) => (
     <div style={{ marginBottom: 24 }}>
@@ -167,7 +168,7 @@ export default function AboutPanelGeneric({ theme: t, network }) {
       )}
 
       <div style={{ textAlign: "center", padding: "8px 0 20px", color: t.textHint, fontSize: 11 }}>
-        Fait avec 🚌 à {cityName}
+        Fait avec 🚌 {loc}
       </div>
     </div>
   );
