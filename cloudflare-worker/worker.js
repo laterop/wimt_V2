@@ -7,9 +7,13 @@ const CORS = {
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
+// Montpellier (TAM) : flux GTFS-RT bruts en protobuf.
+// Nîmes (Tango) : version corrigée de bus-tracker.fr, déjà exposée en JSON.
 const ENDPOINTS = {
-  "vehicle":    "https://data.montpellier3m.fr/GTFS/Urbain/VehiclePosition.pb",
-  "tripupdate": "https://data.montpellier3m.fr/GTFS/Urbain/TripUpdate.pb",
+  "vehicle":          { url: "https://data.montpellier3m.fr/GTFS/Urbain/VehiclePosition.pb",         type: "application/octet-stream" },
+  "tripupdate":       { url: "https://data.montpellier3m.fr/GTFS/Urbain/TripUpdate.pb",               type: "application/octet-stream" },
+  "nimes-vehicle":    { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/vehicle-positions?format=json", type: "application/json" },
+  "nimes-tripupdate": { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/trip-updates?format=json",       type: "application/json" },
 };
 
 async function handleRequest(request) {
@@ -22,7 +26,7 @@ async function handleRequest(request) {
   const target = ENDPOINTS[feed] || ENDPOINTS["vehicle"];
 
   try {
-    const response = await fetch(target, {
+    const response = await fetch(target.url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; WimT/1.0)" },
     });
     const body = await response.arrayBuffer();
@@ -30,7 +34,7 @@ async function handleRequest(request) {
       status: response.status,
       headers: {
         ...CORS,
-        "Content-Type": "application/octet-stream",
+        "Content-Type": target.type,
         "Cache-Control": "no-cache",
       },
     });

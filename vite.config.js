@@ -11,8 +11,9 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main:  r('index.html'),       // page d'accueil — choix du réseau
-        carte: r('carte/index.html'), // app carte temps réel (Montpellier)
+        main:  r('index.html'),             // page d'accueil — choix du réseau
+        carte: r('carte/index.html'),       // app carte temps réel (Montpellier)
+        nimes: r('carte/nimes/index.html'), // app carte temps réel (Nîmes)
       },
     },
   },

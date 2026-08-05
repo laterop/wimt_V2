@@ -3,6 +3,7 @@ import "leaflet/dist/leaflet.css";
 
 import { useVehicles } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
+import { useAllTraces } from "./hooks/useAllTraces";
 import { getTheme } from "./theme";
 import SplashScreen from "./components/SplashScreen";
 
@@ -67,6 +68,7 @@ export default function WimT() {
 
   const { vehicules, lastUpdate, error, gtfsRef } = useVehicles();
   const nextStops = useNextStop(vehicules);
+  const allTraces = useAllTraces();
 
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
   const [activeTab, setActiveTab] = useState("live");
@@ -211,6 +213,7 @@ export default function WimT() {
           <Suspense fallback={<TabLoader theme={t} />}>
             <MapView
               theme={t}
+              allTraces={allTraces}
               sortedVehicles={sortedVehicles}
               selectedVehicle={selectedVehicle}
               selectedVehicleObj={selectedVehicleObj}

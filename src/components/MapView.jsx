@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
 import RoutePanel from "./RoutePanel";
-import { useAllTraces } from "../hooks/useAllTraces";
+
+const MTP_CENTER = [43.6117, 3.8767];
 
 function FlyTo({ position }) {
   const map = useMap();
@@ -12,9 +13,8 @@ function FlyTo({ position }) {
   return null;
 }
 
-export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error }) {
+export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces, center = MTP_CENTER, zoom = 13 }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
-  const allTraces = useAllTraces();
 
   const glassPanel = {
     background: isDark ? "rgba(15,17,23,0.82)" : "rgba(255,255,255,0.88)",
@@ -30,8 +30,8 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
   return (
     <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
       <MapContainer
-        center={[43.6117, 3.8767]}
-        zoom={13}
+        center={center}
+        zoom={zoom}
         style={{ height: "100%", width: "100%" }}
         ref={mapRef}
         zoomControl={false}
@@ -109,7 +109,7 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
           )}
         </div>
         <button
-          onClick={() => { mapRef.current?.setView([43.6117, 3.8767], 13); onDeselect(); }}
+          onClick={() => { mapRef.current?.setView(center, zoom); onDeselect(); }}
           style={{ ...glassPanel, width: 38, height: 38, border: `0.5px solid ${border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
           title="Recentrer"
         >
