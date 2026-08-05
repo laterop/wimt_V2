@@ -54,6 +54,33 @@ for (const s of stopsRaw) {
   }
 }
 
+// ── Calendrier (service_id actif par date, pour la fiche horaire) ─────────────
+// Ce réseau ne publie pas calendar.txt (pas de motif hebdo récurrent), mais
+// calendar_dates.txt liste explicitement, pour chaque date, les service_id
+// actifs (exception_type 1 = ajouté, 2 = retiré).
+const calendarDatesPath = path.join(publicDir, "calendar_dates.txt");
+const serviceDates = {}; // "YYYYMMDD" -> [service_id, ...]
+if (fs.existsSync(calendarDatesPath)) {
+  console.log("Chargement calendar_dates.txt...");
+  const cd = parseCsv(fs.readFileSync(calendarDatesPath, "utf8"));
+  const byDate = {};
+  for (const row of cd) {
+    const date = row.date?.trim();
+    const sid = row.service_id?.trim();
+    if (!date || !sid) continue;
+    if (!byDate[date]) byDate[date] = new Set();
+    if (row.exception_type === "1") byDate[date].add(sid);
+    else if (row.exception_type === "2") byDate[date].delete(sid);
+  }
+  for (const [date, sids] of Object.entries(byDate)) {
+    serviceDates[date] = [...sids];
+  }
+  fs.writeFileSync(path.join(publicDir, "service-dates.json"), JSON.stringify(serviceDates));
+  console.log(`✅ service-dates.json (${Object.keys(serviceDates).length} dates)`);
+} else {
+  console.log("⚠️  Pas de calendar_dates.txt trouvé, service-dates.json non généré (fiche horaire limitée).");
+}
+
 // ── Stop_times ────────────────────────────────────────────────────────────────
 console.log("Chargement stop_times.txt...");
 const raw = fs.readFileSync(path.join(publicDir, "stop_times.txt"), "utf8");

@@ -66,6 +66,68 @@ const trips = readCsv("trips.txt");
 const stops = readCsv("stops.txt");
 console.log(`Routes: ${routes.length}, Trips: ${trips.length}, Stops: ${stops.length}`);
 
+// ── Calendrier (service_id actif par date, pour la fiche horaire) ─────────────
+// Supporte les deux formats GTFS : calendar.txt (motif hebdomadaire récurrent,
+// avec calendar_dates.txt en complément pour les exceptions) et/ou
+// calendar_dates.txt seul (dates explicites, cas de Montpellier).
+// On calcule ici, pour chaque date des ~90 prochains jours, l'ensemble des
+// service_id actifs, et on l'écrit dans service-dates.json.
+function buildServiceDates() {
+  const calendarPath = path.join(SRC, "calendar.txt");
+  const calendarDatesPath = path.join(SRC, "calendar_dates.txt");
+  const hasCalendar = fs.existsSync(calendarPath);
+  const hasCalendarDates = fs.existsSync(calendarDatesPath);
+  if (!hasCalendar && !hasCalendarDates) return null;
+
+  const DOW = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const toDate = (yyyymmdd) => {
+    const y = +yyyymmdd.slice(0, 4), m = +yyyymmdd.slice(4, 6) - 1, d = +yyyymmdd.slice(6, 8);
+    return new Date(y, m, d);
+  };
+  const fmt = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+
+  const byDate = {};
+  const addDate = (date) => { if (!byDate[date]) byDate[date] = new Set(); return byDate[date]; };
+
+  if (hasCalendar) {
+    const cal = parseCsv(fs.readFileSync(calendarPath, "utf8"));
+    const today = new Date();
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      const date = fmt(d);
+      for (const row of cal) {
+        const start = row.start_date, end = row.end_date;
+        if (start && date < start) continue;
+        if (end && date > end) continue;
+        if (row[DOW[d.getDay()]] === "1") addDate(date).add(row.service_id);
+      }
+    }
+  }
+
+  if (hasCalendarDates) {
+    const cd = parseCsv(fs.readFileSync(calendarDatesPath, "utf8"));
+    for (const row of cd) {
+      const date = row.date?.trim();
+      const sid = row.service_id?.trim();
+      if (!date || !sid) continue;
+      if (row.exception_type === "1") addDate(date).add(sid);
+      else if (row.exception_type === "2" && byDate[date]) byDate[date].delete(sid);
+    }
+  }
+
+  const out = {};
+  for (const [date, sids] of Object.entries(byDate)) out[date] = [...sids];
+  return out;
+}
+
+const serviceDates = buildServiceDates();
+if (serviceDates) {
+  fs.writeFileSync(path.join(OUT, "service-dates.json"), JSON.stringify(serviceDates));
+  console.log(`✅ service-dates.json (${Object.keys(serviceDates).length} dates)`);
+} else {
+  console.log("⚠️  Pas de calendar.txt / calendar_dates.txt, service-dates.json non généré (fiche horaire limitée).");
+}
+
 const stopsMap = new Map();
 stops.forEach(s => stopsMap.set(s.stop_id, s));
 
