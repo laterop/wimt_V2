@@ -5,11 +5,12 @@
 import { useState, useEffect, useRef } from "react";
 import { BASE } from "../base.js";
 
-let gtfsDataCache = null;
-async function loadGtfsData() {
-  if (gtfsDataCache) return gtfsDataCache;
-  gtfsDataCache = await fetch(`${BASE}gtfs-data.json`).then(r => r.json());
-  return gtfsDataCache;
+const gtfsDataCache = new Map();
+async function loadGtfsData(dataBase = "") {
+  if (gtfsDataCache.has(dataBase)) return gtfsDataCache.get(dataBase);
+  const data = await fetch(`${BASE}${dataBase}gtfs-data.json`).then(r => r.json());
+  gtfsDataCache.set(dataBase, data);
+  return data;
 }
 
 // ─── Géométrie ────────────────────────────────────────────────────────────────
@@ -150,23 +151,32 @@ export function countStopsAway(nextStopInfo, targetStopId) {
 
 // ─── Hook React ───────────────────────────────────────────────────────────────
 
-export function useNextStop(vehicules) {
+export function useNextStop(vehicules, dataBase = "") {
   const [nextStops, setNextStops] = useState(new Map());
   const gtfsRef = useRef(null);
 
+  // Recharge les données de ligne quand on change de réseau.
   useEffect(() => {
-    loadGtfsData().then(data => { gtfsRef.current = data; });
-  }, []);
+    gtfsRef.current = null;
+    loadGtfsData(dataBase).then(data => { gtfsRef.current = data; });
+  }, [dataBase]);
 
   useEffect(() => {
-    if (!gtfsRef.current || vehicules.length === 0) return;
-    const map = new Map();
-    for (const v of vehicules) {
-      const result = computeNextStop(v, gtfsRef.current);
-      if (result) map.set(v.id, result);
-    }
-    setNextStops(map);
-  }, [vehicules]);
+    let cancelled = false;
+    (async () => {
+      if (vehicules.length === 0) return;
+      const gtfsData = gtfsRef.current || (await loadGtfsData(dataBase));
+      gtfsRef.current = gtfsData;
+      if (cancelled) return;
+      const map = new Map();
+      for (const v of vehicules) {
+        const result = computeNextStop(v, gtfsData);
+        if (result) map.set(v.id, result);
+      }
+      setNextStops(map);
+    })();
+    return () => { cancelled = true; };
+  }, [vehicules, dataBase]);
 
   return nextStops;
 }

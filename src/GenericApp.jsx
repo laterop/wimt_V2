@@ -71,7 +71,7 @@ export default function GenericApp({ network }) {
     format: network.vehicleFormat || "json",
     busTramPrefixes: network.busTramPrefixes || [],
   });
-  const nextStops = useNextStop(vehicules);
+  const nextStops = useNextStop(vehicules, network.dataBase);
   const allTraces = useTracesGeneric(network.dataBase);
 
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
