@@ -9,11 +9,16 @@ const CORS = {
 
 // Montpellier (TAM) : flux GTFS-RT bruts en protobuf.
 // Nîmes (Tango) : version corrigée de bus-tracker.fr, déjà exposée en JSON.
+// Perpignan (Sankéo) : trip-updates via Mecatran (protobuf, clé API embarquée
+// côté serveur pour ne pas l'exposer au client). Pas de flux vehicle-positions
+// fiable trouvé à ce jour : le flux communautaire mybusfinder.fr ne contient
+// aucune entité (feed vide) au moment de l'écriture. À réévaluer.
 const ENDPOINTS = {
-  "vehicle":          { url: "https://data.montpellier3m.fr/GTFS/Urbain/VehiclePosition.pb",         type: "application/octet-stream" },
-  "tripupdate":       { url: "https://data.montpellier3m.fr/GTFS/Urbain/TripUpdate.pb",               type: "application/octet-stream" },
-  "nimes-vehicle":    { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/vehicle-positions?format=json", type: "application/json" },
-  "nimes-tripupdate": { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/trip-updates?format=json",       type: "application/json" },
+  "vehicle":              { url: "https://data.montpellier3m.fr/GTFS/Urbain/VehiclePosition.pb",         type: "application/octet-stream" },
+  "tripupdate":           { url: "https://data.montpellier3m.fr/GTFS/Urbain/TripUpdate.pb",               type: "application/octet-stream" },
+  "nimes-vehicle":        { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/vehicle-positions?format=json", type: "application/json" },
+  "nimes-tripupdate":     { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/trip-updates?format=json",       type: "application/json" },
+  "perpignan-tripupdate": { url: "https://eur.mecatran.com/utw/ws/gtfsfeed/realtime/perpignan?apiKey=612f606b5e3b0a3e6e1f441a2c4a050f6a345b55", type: "application/x-protobuf" },
 };
 
 async function handleRequest(request) {

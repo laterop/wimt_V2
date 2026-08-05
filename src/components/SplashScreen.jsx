@@ -5,7 +5,7 @@ import { BASE } from "../base.js";
 
 // Tente de charger les stats live depuis le proxy Cloudflare
 // On réutilise la même URL que useVehicles
-const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://tam-proxy.drivedemerde.workers.dev";
+const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://wimt-proxy.drivedemerde.workers.dev";
 
 async function fetchStats() {
   const [routesText, protoText] = await Promise.all([

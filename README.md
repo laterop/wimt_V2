@@ -175,8 +175,10 @@ Ou importer le repo depuis [vercel.com](https://vercel.com). Le fichier `vercel.
 
 ```bash
 cd cloudflare-worker
-npx wrangler deploy worker.js --name tam-proxy
+npx wrangler deploy worker.js --name wimt-proxy
 ```
+
+Le worker sert désormais plusieurs réseaux (Montpellier, Nîmes...) via le paramètre `?feed=`, voir `ENDPOINTS` dans `worker.js`.
 
 L'URL du worker déployé doit ensuite être renseignée dans la variable d'environnement `VITE_GTFS_RT_URL` sur Vercel.
 

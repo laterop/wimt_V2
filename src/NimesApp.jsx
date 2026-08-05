@@ -21,7 +21,7 @@ const NETWORK = {
   center: [43.8367, 4.3601],
   zoom: 13,
   dataBase: "nimes/",
-  vehiclePositionsUrl: "https://tam-proxy.drivedemerde.workers.dev?feed=nimes-vehicle",
+  vehiclePositionsUrl: "https://wimt-proxy.drivedemerde.workers.dev?feed=nimes-vehicle",
   dataSourceLabel: "transport.data.gouv.fr",
   dataSourceUrl: "https://transport.data.gouv.fr/datasets/offre-de-transport-du-reseau-tango-de-nimes-metropole-gtfs-gtfs-rt",
   rtCreditLabel: "gtfs.bus-tracker.fr",

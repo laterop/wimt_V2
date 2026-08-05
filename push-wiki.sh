@@ -164,7 +164,7 @@ Variable d'environnement à configurer sur Vercel :
 
 ```bash
 cd cloudflare-worker
-npx wrangler deploy worker.js --name tam-proxy
+npx wrangler deploy worker.js --name wimt-proxy
 ```
 
 Test en local :
