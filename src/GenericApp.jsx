@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useVehiclesGeneric } from "./hooks/useVehiclesGeneric";
 import { useTracesGeneric } from "./hooks/useTracesGeneric";
 import { useNextStop } from "./hooks/useNextStop";
+import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreenGeneric from "./components/SplashScreenGeneric";
 
@@ -103,7 +104,7 @@ export default function GenericApp({ network }) {
     const route = gtfsData?.[v.route_id];
     setSelectedRouteData({
       trace: [],
-      stops: route?.stops || [],
+      stops: mergeStopsByProximity(route?.stops || []),
       color: v.route_color,
       short_name: v.route_short_name,
     });

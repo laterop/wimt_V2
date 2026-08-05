@@ -68,24 +68,26 @@ export async function loadGTFS() {
   });
 
   // Arrêts tram indexés par numéro de ligne
+  // (lignes_passantes utilise "; " comme séparateur pour les arrêts partagés
+  // par plusieurs lignes, ex: "1; 4" — pas la virgule)
   const tramStops = new Map();
-  arretsTram.features.forEach(f => {
-    const lignes = String(f.properties.lignes_passantes || "").split(",").map(l => l.trim());
+  arretsTram.features.forEach((f, i) => {
+    const lignes = String(f.properties.lignes_passantes || "").split(/[,;]/).map(l => l.trim()).filter(Boolean);
     const [lon, lat] = f.geometry.coordinates;
     lignes.forEach(l => {
       if (!tramStops.has(l)) tramStops.set(l, []);
-      tramStops.get(l).push({ name: f.properties.description, lat, lon });
+      tramStops.get(l).push({ id: f.properties.id ?? i, name: f.properties.description, lat, lon });
     });
   });
 
   // Arrêts bus indexés par numéro de ligne
   const busStops = new Map();
-  arretsBus.features.forEach(f => {
-    const lignes = String(f.properties.lignes_passantes || "").split(",").map(l => l.trim());
+  arretsBus.features.forEach((f, i) => {
+    const lignes = String(f.properties.lignes_passantes || "").split(/[,;]/).map(l => l.trim()).filter(Boolean);
     const [lon, lat] = f.geometry.coordinates;
     lignes.forEach(l => {
       if (!busStops.has(l)) busStops.set(l, []);
-      busStops.get(l).push({ name: f.properties.description, lat, lon });
+      busStops.get(l).push({ id: f.properties.id ?? i, name: f.properties.description, lat, lon });
     });
   });
 

@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useVehicles } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
 import { useAllTraces } from "./hooks/useAllTraces";
+import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreen from "./components/SplashScreen";
 
@@ -112,7 +113,7 @@ export default function WimT() {
       trace = tr ? (tr[dir].length ? tr[dir] : tr.aller) : [];
       stops = gtfs.busStops.get(num) || [];
     }
-    setSelectedRouteData({ trace, stops, color: v.route_color, short_name: num });
+    setSelectedRouteData({ trace, stops: mergeStopsByProximity(stops), color: v.route_color, short_name: num });
   }, [gtfsRef]);
 
   const handleDeselect = useCallback(() => {

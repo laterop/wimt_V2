@@ -77,7 +77,9 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
             <Popup>
               <div style={{ fontFamily: "'Inter',system-ui,sans-serif", fontSize: 12, padding: "2px 0" }}>
                 <div style={{ fontWeight: 600, color: text }}>{s.name}</div>
-                <div style={{ color: textSub, fontSize: 10, marginTop: 2 }}>Ligne {selectedRouteData.short_name}</div>
+                <div style={{ color: textSub, fontSize: 10, marginTop: 2 }}>
+                  Ligne {selectedRouteData.short_name}{s.count > 1 ? " · aller + retour" : ""}
+                </div>
               </div>
             </Popup>
           </CircleMarker>
