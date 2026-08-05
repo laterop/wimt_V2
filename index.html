@@ -157,32 +157,58 @@
       background: var(--card);
       border: 0.5px solid var(--border);
       border-radius: 20px;
-      padding: 28px 24px;
+      padding: 26px 24px 24px;
       text-decoration: none;
       color: var(--text);
       display: flex; flex-direction: column;
-      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
       position: relative;
+      overflow: hidden;
+    }
+    .network-card::before {
+      content: "";
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--net-grad);
+      opacity: 0.9;
     }
     .network-card.is-live {
       cursor: pointer;
-      border-color: rgba(0,116,201,0.35);
+      border-color: rgba(255,255,255,0.1);
     }
     .network-card.is-live:hover {
-      transform: translateY(-3px);
-      border-color: var(--accent2);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.18);
       background: #1e2233;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+    }
+    .network-card.is-live:hover .network-badge {
+      transform: scale(1.06);
     }
     .network-card.is-soon {
-      opacity: 0.6;
+      opacity: 0.55;
       cursor: default;
+    }
+    .network-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; margin-bottom: 16px;
+    }
+    .network-badge {
+      width: 52px; height: 52px; border-radius: 15px;
+      background: var(--net-grad);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 6px 18px var(--net-glow);
+      transition: transform 0.25s ease;
+    }
+    .network-badge-mono {
+      font-size: 15px; font-weight: 900; color: #fff;
+      letter-spacing: -0.3px;
     }
     .network-status {
       display: inline-flex; align-items: center; gap: 6px;
-      align-self: flex-start;
       padding: 4px 10px; border-radius: 20px;
       font-size: 11px; font-weight: 700;
-      margin-bottom: 18px;
+      flex-shrink: 0;
     }
     .network-status.live { background: rgba(34,197,94,0.12); border: 0.5px solid rgba(34,197,94,0.3); color: #22c55e; }
     .network-status.soon { background: rgba(245,158,11,0.1); border: 0.5px solid rgba(245,158,11,0.28); color: var(--soon); }
@@ -194,7 +220,7 @@
       font-size: 13px; font-weight: 700;
       display: flex; align-items: center; gap: 6px;
     }
-    .network-action.live { color: var(--accent2); }
+    .network-action.live { color: var(--net-accent); }
     .network-action.soon { color: var(--hint); }
 
     /* ── Features ── */
@@ -286,7 +312,7 @@
 
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
-      Réseau TAM en direct
+      3 réseaux en direct
     </div>
 
     <h1>Where is my<br><span>Transport</span></h1>
@@ -312,8 +338,11 @@
 
     <div class="networks-grid">
 
-      <a href="/carte/" class="network-card is-live">
-        <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+      <a href="/carte/" class="network-card is-live" style="--net-grad: linear-gradient(135deg,#0074c9,#00b4d8); --net-glow: rgba(0,116,201,0.35); --net-accent: #3ea6e0;">
+        <div class="network-top">
+          <div class="network-badge"><span class="network-badge-mono">TAM</span></div>
+          <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+        </div>
         <div class="network-city">Montpellier</div>
         <div class="network-operator">Réseau TAM · tram, BusTram, bus</div>
         <p class="network-desc">
@@ -322,28 +351,37 @@
         <span class="network-action live">Ouvrir la carte →</span>
       </a>
 
-      <a href="/carte/nimes/" class="network-card is-live">
-        <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+      <a href="/carte/nimes/" class="network-card is-live" style="--net-grad: linear-gradient(135deg,#e8590c,#ff9a3c); --net-glow: rgba(232,89,12,0.35); --net-accent: #ff9a3c;">
+        <div class="network-top">
+          <div class="network-badge"><span class="network-badge-mono">TAN</span></div>
+          <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+        </div>
         <div class="network-city">Nîmes</div>
-        <div class="network-operator">Réseau Tango · bus</div>
+        <div class="network-operator">Réseau Tango · bus, BusTram</div>
         <p class="network-desc">
-          Positions live des bus, prochains arrêts, diagrammes de lignes. Mis à jour toutes les 8 secondes.
+          Positions live des bus et lignes BusTram T1-T5, prochains arrêts, diagrammes de lignes. Mis à jour toutes les 8 secondes.
         </p>
         <span class="network-action live">Ouvrir la carte →</span>
       </a>
 
-      <div class="network-card is-soon">
-        <span class="network-status soon"><span class="network-status-dot"></span>Bientôt disponible</span>
+      <div class="network-card is-soon" style="--net-grad: linear-gradient(135deg,#7c3aed,#c084fc); --net-glow: rgba(124,58,237,0.3);">
+        <div class="network-top">
+          <div class="network-badge"><span class="network-badge-mono">SNK</span></div>
+          <span class="network-status soon"><span class="network-status-dot"></span>Bientôt disponible</span>
+        </div>
         <div class="network-city">Perpignan</div>
         <div class="network-operator">Réseau Sankéo · bus</div>
         <p class="network-desc">
-          Données GTFS et GTFS-RT disponibles en open data, intégration en cours.
+          Données GTFS et GTFS-RT disponibles en open data, mais sans flux de positions GPS fiable pour l'instant.
         </p>
         <span class="network-action soon">À venir</span>
       </div>
 
-      <a href="/carte/lio/" class="network-card is-live">
-        <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+      <a href="/carte/lio/" class="network-card is-live" style="--net-grad: linear-gradient(135deg,#00965e,#4ade80); --net-glow: rgba(0,150,94,0.35); --net-accent: #4ade80;">
+        <div class="network-top">
+          <div class="network-badge"><span class="network-badge-mono">liO</span></div>
+          <span class="network-status live"><span class="network-status-dot"></span>En direct</span>
+        </div>
         <div class="network-city">Occitanie</div>
         <div class="network-operator">Réseau liO · cars interurbains</div>
         <p class="network-desc">

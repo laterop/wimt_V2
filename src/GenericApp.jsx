@@ -15,9 +15,11 @@ const ArretPanel         = lazy(() => import("./components/ArretPanel"));
 const ThermometresPanel  = lazy(() => import("./components/ThermometresPanel"));
 const AboutPanelGeneric  = lazy(() => import("./components/AboutPanelGeneric"));
 
-const FILTER_CHIPS = [
+const BASE_FILTER_CHIPS = [
   { key: "showBus", label: "🚌 Bus", activeColor: "#fbbf24", activeBg: "rgba(180,83,9,0.18)" },
 ];
+const BUSTRAM_CHIP =
+  { key: "showBustrams", label: "🚌 BusTram", activeColor: "#f9a8b8", activeBg: "rgba(132,25,49,0.2)" };
 
 function TabIcon({ d, active, color }) {
   return (
@@ -60,10 +62,14 @@ function TabLoader({ theme: t }) {
 export default function GenericApp({ network }) {
   const [showSplash, setShowSplash] = useState(true);
 
+  const hasBustram = (network.busTramPrefixes || []).length > 0;
+  const FILTER_CHIPS = hasBustram ? [...BASE_FILTER_CHIPS, BUSTRAM_CHIP] : BASE_FILTER_CHIPS;
+
   const { vehicules, lastUpdate, error, gtfsRef } = useVehiclesGeneric({
     dataBase: network.dataBase,
     vehiclePositionsUrl: network.vehiclePositionsUrl,
     format: network.vehicleFormat || "json",
+    busTramPrefixes: network.busTramPrefixes || [],
   });
   const nextStops = useNextStop(vehicules);
   const allTraces = useTracesGeneric(network.dataBase);
@@ -74,7 +80,7 @@ export default function GenericApp({ network }) {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedRouteData, setSelectedRouteData] = useState(null);
-  const [filters, setFilters] = useState({ showBus: true, showStops: false });
+  const [filters, setFilters] = useState({ showBus: true, showBustrams: true, showStops: false });
 
   const mapRef = useRef(null);
   const t = getTheme(theme === "dark");
@@ -110,7 +116,8 @@ export default function GenericApp({ network }) {
   }, []);
 
   const vehiculesFiltres = vehicules.filter(v => {
-    if (!filters.showBus) return false;
+    if (!filters.showBustrams && v.vehicleType === "bustram") return false;
+    if (!filters.showBus      && v.vehicleType === "bus")     return false;
     const q = filtreLigne.toLowerCase();
     return !q || v.route_short_name.toLowerCase().includes(q) || v.headsign.toLowerCase().includes(q);
   });
@@ -178,6 +185,7 @@ export default function GenericApp({ network }) {
                 theme={t}
                 vehicules={vehicules}
                 nextStops={nextStops}
+                dataBase={network.dataBase}
                 onTrackVehicle={(v) => { setActiveTab("live"); handleVehicleClick(v); }}
               />
             )}
@@ -243,10 +251,18 @@ export default function GenericApp({ network }) {
       {/* Stats flottantes (Live uniquement) */}
       {isLiveTab && (
         <div style={{ position: "fixed", bottom: selectedLine ? 176 : 64, right: 14, zIndex: 1000, display: "flex", flexDirection: "column", gap: 4, transition: "bottom 0.25s ease" }}>
-          <div style={{ background: t.panelBg === "#ffffff" ? "rgba(255,255,255,0.88)" : "rgba(15,17,23,0.82)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `0.5px solid ${t.border}`, borderRadius: 10, padding: "4px 9px", display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: theme === "dark" ? "#fbbf24" : "#b45309" }}>{vehicules.length}</span>
-            <span style={{ fontSize: 10, color: t.textSub }}>Bus</span>
-          </div>
+          {(hasBustram
+            ? [
+                { label: "BusTram", value: vehicules.filter(v => v.vehicleType === "bustram").length, color: "#e87fa3" },
+                { label: "Bus",     value: vehicules.filter(v => v.vehicleType === "bus").length,      color: theme === "dark" ? "#fbbf24" : "#b45309" },
+              ]
+            : [{ label: "Bus", value: vehicules.length, color: theme === "dark" ? "#fbbf24" : "#b45309" }]
+          ).map(s => (
+            <div key={s.label} style={{ background: t.panelBg === "#ffffff" ? "rgba(255,255,255,0.88)" : "rgba(15,17,23,0.82)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `0.5px solid ${t.border}`, borderRadius: 10, padding: "4px 9px", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: s.color }}>{s.value}</span>
+              <span style={{ fontSize: 10, color: t.textSub }}>{s.label}</span>
+            </div>
+          ))}
         </div>
       )}
 

@@ -5,12 +5,14 @@ import { countStopsAway } from "../hooks/useNextStop";
 import { BASE } from "../base.js";
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
+// Clé par dataBase ("" pour Montpellier à la racine, "nimes/", "lio/", ...)
+// pour éviter qu'un réseau ne réutilise par erreur les données d'un autre.
 
-let metaCache = null;
-async function loadMeta() {
-  if (metaCache) return metaCache;
-  const data = await fetch(`${BASE}stop-meta.json`).then(r => r.json());
-  metaCache = data;
+const metaCache = new Map();
+async function loadMeta(dataBase) {
+  if (metaCache.has(dataBase)) return metaCache.get(dataBase);
+  const data = await fetch(`${BASE}${dataBase}stop-meta.json`).then(r => r.json());
+  metaCache.set(dataBase, data);
   return data;
 }
 
@@ -129,7 +131,7 @@ function FlyTo({ position }) {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function ArretPanel({ theme: t, vehicules = [], nextStops = new Map(), onTrackVehicle }) {
+export default function ArretPanel({ theme: t, vehicules = [], nextStops = new Map(), onTrackVehicle, dataBase = "" }) {
   const [query, setQuery]               = useState("");
   const [allMeta, setAllMeta]           = useState([]);     // [{name, entries:[{id,lat,lon,types}]}]
   const [suggestions, setSuggestions]   = useState([]);
@@ -143,7 +145,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
   const [listTypeFilter, setListTypeFilter] = useState(null); // filtre type sur la liste
   const mapRef = useRef(null);
 
-  useEffect(() => { loadMeta().then(setAllMeta); }, []);
+  useEffect(() => { loadMeta(dataBase).then(setAllMeta); }, [dataBase]);
 
   // Suggestions dropdown (seulement quand un arrêt est déjà sélectionné, sinon on utilise la liste)
   useEffect(() => {
@@ -175,7 +177,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
     if (!stopId) return;
     setLoading(true);
     try {
-      const data = await fetch(`${BASE}stops/${stopId}.json`).then(r => {
+      const data = await fetch(`${BASE}${dataBase}stops/${stopId}.json`).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       });
@@ -218,7 +220,7 @@ export default function ArretPanel({ theme: t, vehicules = [], nextStops = new M
       setPassages([]);
     }
     setLoading(false);
-  }, []);
+  }, [dataBase]);
 
   useEffect(() => {
     if (!selectedEntry) return;

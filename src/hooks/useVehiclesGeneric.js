@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef } from "react";
 import protobuf from "protobufjs";
 import { BASE } from "../base.js";
+import { classifyVehicleType } from "../lib/classifyVehicleType.js";
 
 let feedMessageTypeCache = null;
 async function getFeedMessageType() {
@@ -20,7 +21,7 @@ async function getFeedMessageType() {
   return feedMessageTypeCache;
 }
 
-export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, format = "json", refreshMs = 8000 }) {
+export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, format = "json", busTramPrefixes = [], refreshMs = 8000 }) {
   const [vehicules, setVehicules] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [error, setError] = useState(null);
@@ -89,7 +90,7 @@ export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, format = "js
               route_color: route.color || "0074c9",
               route_text_color: route.text_color || "FFFFFF",
               route_type: route.type ?? 3,
-              vehicleType: "bus",
+              vehicleType: classifyVehicleType(route.short_name || route_id, busTramPrefixes),
               headsign,
               direction_id: dir,
             };
@@ -111,7 +112,7 @@ export function useVehiclesGeneric({ dataBase, vehiclePositionsUrl, format = "js
     fetchData();
     const interval = setInterval(fetchData, refreshMs);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [dataBase, vehiclePositionsUrl, format, refreshMs]);
+  }, [dataBase, vehiclePositionsUrl, format, refreshMs, busTramPrefixes]);
 
   return { vehicules, lastUpdate, error, gtfsRef };
 }

@@ -11,24 +11,27 @@
  *   - stop-meta.json + stops/{stop_id}.json : index de recherche d'arrêts + prochains
  *                        passages. Consommé par ArretPanel.
  *
- * Usage : node scripts/build-network.mjs <source_gtfs_dir> <output_public_dir>
- * Exemple : node scripts/build-network.mjs /tmp/tango-gtfs public/nimes
+ * Usage : node scripts/build-network.mjs <source_gtfs_dir> <output_public_dir> [busTramPrefixes]
+ * Exemple : node scripts/build-network.mjs /tmp/tango-gtfs public/nimes T
+ *           (préfixes séparés par des virgules, ex: "T,BHNS" -> lignes T1, T2, BHNS1... classées "bustram")
  */
 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { classifyVehicleType } from "../src/lib/classifyVehicleType.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const [, , srcArg, outArg] = process.argv;
+const [, , srcArg, outArg, prefixesArg] = process.argv;
 if (!srcArg || !outArg) {
-  console.error("Usage: node scripts/build-network.mjs <source_gtfs_dir> <output_public_dir>");
+  console.error("Usage: node scripts/build-network.mjs <source_gtfs_dir> <output_public_dir> [busTramPrefixes]");
   process.exit(1);
 }
 const SRC = path.resolve(__dirname, "..", srcArg);
 const OUT = path.resolve(__dirname, "..", outArg);
 const STOPS_OUT = path.join(OUT, "stops");
+const BUSTRAM_PREFIXES = (prefixesArg || "").split(",").map(s => s.trim()).filter(Boolean);
 fs.mkdirSync(OUT, { recursive: true });
 fs.mkdirSync(STOPS_OUT, { recursive: true });
 
@@ -219,7 +222,7 @@ if (fs.existsSync(shapesPath)) {
       linesOut[route.route_short_name || routeId] = {
         color: `#${route.route_color || "888888"}`,
         textColor: `#${route.route_text_color || "FFFFFF"}`,
-        type: "bus",
+        type: classifyVehicleType(route.route_short_name || routeId, BUSTRAM_PREFIXES),
         segments,
       };
     }
@@ -268,15 +271,22 @@ for (let i = 1; i < stLines.length; i++) {
 }
 console.log(`${count} passages pour ${Object.keys(index).length} arrêts.`);
 
+// ArretPanel attend le vocabulaire "brt" (pas "bustram") pour les lignes premium,
+// cf. TYPE_CONFIG dans src/components/ArretPanel.jsx.
+const stopTypeOf = (routeShortName) =>
+  classifyVehicleType(routeShortName, BUSTRAM_PREFIXES) === "bustram" ? "brt" : "bus";
+
 for (const [stop_id, passages] of Object.entries(index)) {
   const seen = new Set();
   const deduped = [];
+  const typesSet = new Set();
   for (const p of passages) {
     const key = `${p.dep}|${p.n}|${p.h}`;
     if (!seen.has(key)) { seen.add(key); deduped.push(p); }
+    typesSet.add(stopTypeOf(p.n));
   }
   deduped.sort((a, b) => a.dep.localeCompare(b.dep));
-  deduped._types = ["bus"];
+  deduped._types = [...typesSet];
   fs.writeFileSync(path.join(STOPS_OUT, `${stop_id}.json`), JSON.stringify(deduped));
 }
 
@@ -288,7 +298,8 @@ for (const s of stops) {
   if (!index[s.stop_id]) continue;
   const key = s.stop_name.toLowerCase().trim();
   if (!nameGroups[key]) nameGroups[key] = { name: s.stop_name.trim(), entries: [] };
-  nameGroups[key].entries.push({ id: s.stop_id, lat, lon, types: ["bus"] });
+  const types = [...new Set(index[s.stop_id].map(p => stopTypeOf(p.n)))];
+  nameGroups[key].entries.push({ id: s.stop_id, lat, lon, types });
 }
 const meta = Object.values(nameGroups);
 fs.writeFileSync(path.join(OUT, "stop-meta.json"), JSON.stringify(meta));

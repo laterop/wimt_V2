@@ -13,6 +13,8 @@ export const NIMES = {
   dataBase: "nimes/",
   vehiclePositionsUrl: "https://wimt-proxy.drivedemerde.workers.dev?feed=nimes-vehicle",
   vehicleFormat: "json",
+  // Lignes T1-T5 : BHNS / lignes premium Tango, distinctes des bus classiques.
+  busTramPrefixes: ["T"],
   dataSourceLabel: "transport.data.gouv.fr",
   dataSourceUrl: "https://transport.data.gouv.fr/datasets/offre-de-transport-du-reseau-tango-de-nimes-metropole-gtfs-gtfs-rt",
   rtCreditLabel: "gtfs.bus-tracker.fr",
@@ -35,6 +37,8 @@ export const LIO = {
   dataBase: "lio/",
   vehiclePositionsUrl: "https://wimt-proxy.drivedemerde.workers.dev?feed=lio-vehicle",
   vehicleFormat: "protobuf",
+  // Réseau de cars uniquement, pas de ligne premium à distinguer.
+  busTramPrefixes: [],
   dataSourceLabel: "transport.data.gouv.fr",
   dataSourceUrl: "https://transport.data.gouv.fr/datasets/reseau-lio-occitanie",
   rtCreditLabel: "lio.2cloud.app",
