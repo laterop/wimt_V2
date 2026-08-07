@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { BASE } from "../base.js";
 
 const gtfsDataCache = new Map();
-async function loadGtfsData(dataBase = "") {
+export async function loadGtfsData(dataBase = "") {
   if (gtfsDataCache.has(dataBase)) return gtfsDataCache.get(dataBase);
   const data = await fetch(`${BASE}${dataBase}gtfs-data.json`).then(r => r.json());
   gtfsDataCache.set(dataBase, data);

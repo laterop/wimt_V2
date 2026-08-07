@@ -214,6 +214,8 @@ export default function WimT() {
           <Suspense fallback={<TabLoader theme={t} />}>
             <MapView
               theme={t}
+              dataBase=""
+              vehicules={vehicules}
               allTraces={allTraces}
               sortedVehicles={sortedVehicles}
               selectedVehicle={selectedVehicle}

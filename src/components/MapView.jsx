@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
 import RoutePanel from "./RoutePanel";
+import LineDrawer from "./LineDrawer";
+import StopDetail from "./StopDetail";
 
 const MTP_CENTER = [43.6117, 3.8767];
 
@@ -23,9 +25,19 @@ function ZoomWatcher({ onZoom }) {
   return null;
 }
 
-export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces, center = MTP_CENTER, zoom = 13 }) {
+export default function MapView({ theme, dataBase = "", vehicules = [], sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces, center = MTP_CENTER, zoom = 13 }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
   const [currentZoom, setCurrentZoom] = useState(zoom);
+
+  // Panneaux ouverts par clic sur une ligne (thermomètre vertical) puis, à sa
+  // droite, sur un arrêt de cette ligne (fiche + prochains passages).
+  const [lineDrawer, setLineDrawer] = useState(null); // { short_name, color, type }
+  const [stopDrawer, setStopDrawer] = useState(null); // { id, name, lat, lon, type }
+
+  const openLine = (line) => { setLineDrawer(line); setStopDrawer(null); };
+  const closeLine = () => { setLineDrawer(null); setStopDrawer(null); };
+  const openStop = (stop) => setStopDrawer(stop);
+  const closeStop = () => setStopDrawer(null);
 
   const glassPanel = {
     background: isDark ? "rgba(15,17,23,0.82)" : "rgba(255,255,255,0.88)",
@@ -78,6 +90,9 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
                 opacity={opacity}
                 lineCap="round"
                 lineJoin="round"
+                eventHandlers={{
+                  click: () => openLine({ short_name: num, color: color.replace("#", ""), type }),
+                }}
               />
             ) : null
           );
@@ -195,6 +210,46 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
           onVehicleClick={onVehicleClick}
           onClose={onDeselect}
         />
+      )}
+
+      {/* Panneaux ligne (thermomètre vertical) + arrêt, ouverts par clic sur
+          la carte. Toujours côte à côte, on scrolle horizontalement si
+          l'écran est trop étroit pour les deux. */}
+      {lineDrawer && (
+        <div style={{
+          position: "absolute", top: 108, bottom: 14, left: 14, right: 14,
+          zIndex: 1050, display: "flex", gap: 10, overflowX: "auto", overflowY: "hidden",
+          pointerEvents: "none",
+        }}>
+          <div style={{ ...glassPanel, width: 300, flexShrink: 0, pointerEvents: "auto", overflow: "hidden", boxShadow: "0 16px 40px rgba(0,0,0,0.3)" }}>
+            <LineDrawer
+              t={theme}
+              dataBase={dataBase}
+              line={lineDrawer}
+              vehicules={vehicules}
+              nextStops={nextStops}
+              onOpenStop={openStop}
+              onClose={closeLine}
+            />
+          </div>
+
+          {stopDrawer && (
+            <div style={{ ...glassPanel, width: 300, flexShrink: 0, pointerEvents: "auto", overflow: "hidden", boxShadow: "0 16px 40px rgba(0,0,0,0.3)" }}>
+              <StopDetail
+                t={theme}
+                dataBase={dataBase}
+                group={{ name: stopDrawer.name, entries: [{ id: stopDrawer.id, lat: stopDrawer.lat, lon: stopDrawer.lon, types: [stopDrawer.type] }] }}
+                entry={{ id: stopDrawer.id, lat: stopDrawer.lat, lon: stopDrawer.lon, types: [stopDrawer.type] }}
+                vehicules={vehicules}
+                nextStops={nextStops}
+                onTrackVehicle={(v) => { onVehicleClick(v); closeLine(); }}
+                onSwitchEntry={() => {}}
+                onClose={closeStop}
+                showMiniMap={false}
+              />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

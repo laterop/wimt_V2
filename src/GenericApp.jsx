@@ -198,6 +198,8 @@ export default function GenericApp({ network }) {
           <Suspense fallback={<TabLoader theme={t} />}>
             <MapView
               theme={t}
+              dataBase={network.dataBase}
+              vehicules={vehicules}
               allTraces={allTraces}
               center={network.center}
               zoom={network.zoom}
