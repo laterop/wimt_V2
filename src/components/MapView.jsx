@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
 import RoutePanel from "./RoutePanel";
 
@@ -13,8 +13,19 @@ function FlyTo({ position }) {
   return null;
 }
 
+// Remonte le niveau de zoom courant au parent : au zoom large, on allège les
+// marqueurs (cône de direction, taille) pour éviter la bouillie visuelle
+// quand beaucoup de véhicules sont proches en pixels malgré une grande
+// distance réelle.
+function ZoomWatcher({ onZoom }) {
+  const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) });
+  useEffect(() => { onZoom(map.getZoom()); }, [map, onZoom]);
+  return null;
+}
+
 export default function MapView({ theme, sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces, center = MTP_CENTER, zoom = 13 }) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
+  const [currentZoom, setCurrentZoom] = useState(zoom);
 
   const glassPanel = {
     background: isDark ? "rgba(15,17,23,0.82)" : "rgba(255,255,255,0.88)",
@@ -37,6 +48,7 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
         zoomControl={false}
       >
         <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={mapTile} />
+        <ZoomWatcher onZoom={setCurrentZoom} />
 
         {/* ── Tracés permanents de toutes les lignes ── */}
         {allTraces && [...allTraces.entries()].map(([num, { color, type, segments }]) => {
@@ -87,7 +99,7 @@ export default function MapView({ theme, sortedVehicles, selectedVehicle, select
 
         {/* Marqueurs véhicules */}
         {sortedVehicles.filter(v => v.lat != null && v.lon != null).map(v => (
-          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} />
+          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} />
         ))}
 
         {selectedVehicleObj && <FlyTo position={[selectedVehicleObj.lat, selectedVehicleObj.lon]} />}

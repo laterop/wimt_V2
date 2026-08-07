@@ -25,15 +25,15 @@ function arcPath(cx, cy, r, startDeg, endDeg) {
   return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
 }
 
-function buildIcon({ bg, fg, label, dotSize, isSelected, bearing }) {
-  const hasBearing = bearing !== null && bearing !== undefined && !isNaN(bearing);
+function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, showLabel }) {
+  const hasBearing = showCone && bearing !== null && bearing !== undefined && !isNaN(bearing);
   const rgb = hexToRgb(bg);
 
   // Dimensions du SVG global
   // Le cône s'étend vers l'avant : on fait un SVG assez grand pour contenir le tout
   const coneR    = dotSize * 2.2;         // rayon du cône
   const coneSpan = 70;                    // demi-angle du cône (140° total)
-  const pad      = coneR + 2;             // padding autour du dot
+  const pad      = hasBearing ? coneR + 2 : 3; // padding autour du dot
   const svgSize  = dotSize + pad * 2;     // taille totale du SVG
   const cx       = svgSize / 2;
   const cy       = svgSize / 2;
@@ -42,6 +42,9 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing }) {
   const ringW    = isSelected ? 2.5 : 1.8;
 
   // Cône de vision : arc orienté selon bearing, avec dégradé radial
+  // Masqué en dessous d'un certain zoom (cf. VehicleMarker) : à l'échelle
+  // métropole, sa taille en pixels reste fixe et finit par recouvrir toute
+  // la carte de halos superposés, illisibles.
   const coneHtml = hasBearing ? (() => {
     const startDeg = bearing - coneSpan;
     const endDeg   = bearing + coneSpan;
@@ -74,11 +77,11 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing }) {
         fill="${bg}"
         stroke="white"
         stroke-width="${ringW}"/>
-      <text x="${cx}" y="${cy}"
+      ${showLabel ? `<text x="${cx}" y="${cy}"
         text-anchor="middle" dominant-baseline="central"
         font-family="Inter,system-ui,sans-serif"
         font-size="${fontSize}" font-weight="700"
-        fill="${fg}">${label}</text>
+        fill="${fg}">${label}</text>` : ""}
     </svg>`;
 
   return L.divIcon({
@@ -89,16 +92,23 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing }) {
   });
 }
 
-export default function VehicleMarker({ v, isSelected, onClick, isDark }) {
+export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 14 }) {
   const bg    = `#${v.route_color || "0074c9"}`;
   const fg    = `#${v.route_text_color || "ffffff"}`;
   const label = v.route_short_name.length > 3
     ? v.route_short_name.slice(0, 3)
     : v.route_short_name;
-  const dotSize = isSelected ? 30 : 22;
+
+  // Allègement des marqueurs au zoom large : le cône de direction a une
+  // taille fixe en pixels, donc à l'échelle métropole il finit par recouvrir
+  // toute la carte de halos superposés. Le sélectionné garde toujours son
+  // détail complet, pour rester repérable même après un dézoom.
+  const showCone  = isSelected || zoom >= 14;
+  const showLabel = isSelected || zoom >= 12;
+  const dotSize   = isSelected ? 30 : zoom >= 14 ? 22 : zoom >= 12 ? 16 : 9;
 
   const icon = buildIcon({
-    bg, fg, label, dotSize, isSelected,
+    bg, fg, label, dotSize, isSelected, showCone, showLabel,
     bearing: v.bearing,
   });
 
