@@ -25,7 +25,7 @@ function ZoomWatcher({ onZoom }) {
 }
 
 export default function MapView({
-  theme, dataBase = "", vehicules = [], sortedVehicles, selectedVehicle, selectedVehicleObj,
+  theme, dataBase = "", vehicules = [], delays, sortedVehicles, selectedVehicle, selectedVehicleObj,
   selectedLine, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect,
   filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces,
   center = MTP_CENTER, zoom = 13,
@@ -112,7 +112,7 @@ export default function MapView({
 
         {/* Marqueurs véhicules */}
         {sortedVehicles.filter(v => v.lat != null && v.lon != null).map(v => (
-          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} />
+          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} delaySec={delays?.get(v.trip_id)} />
         ))}
 
         {selectedVehicleObj && <FlyTo position={[selectedVehicleObj.lat, selectedVehicleObj.lon]} />}
@@ -213,6 +213,7 @@ export default function MapView({
               line={lineDrawer}
               vehicules={vehicules}
               nextStops={nextStops}
+              delays={delays}
               onOpenStop={onOpenStop}
               onClose={onCloseLine}
             />

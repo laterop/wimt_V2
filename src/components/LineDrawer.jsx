@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { loadGtfsData } from "../hooks/useNextStop.js";
+import { formatDelay } from "../lib/formatDelay.js";
 
 // ─── LineDrawer ─────────────────────────────────────────────────────────────
 // Panneau ouvert par un clic sur le tracé d'une ligne sur la carte : thermomètre
@@ -43,7 +44,7 @@ function vehicleProgress(ns, seqLen) {
   return seqIndex / total;
 }
 
-export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nextStops = new Map(), onOpenStop, onClose }) {
+export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nextStops = new Map(), delays, onOpenStop, onClose }) {
   const [gtfsData, setGtfsData] = useState(null);
   const [dir, setDir] = useState("0");
 
@@ -136,8 +137,9 @@ export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nex
             {positioned.map(({ v, progress }) => {
               const top = ROW_H / 2 + progress * (sequence.length - 1) * ROW_H;
               const isMoving = (v.speed ?? 0) > 0;
+              const delay = formatDelay(delays?.get(v.trip_id));
               return (
-                <div key={v.id} style={{ position: "absolute", top: top - 10, left: 0, zIndex: 5, display: "flex", alignItems: "center", gap: 6 }}>
+                <div key={v.id} style={{ position: "absolute", top: top - 10, left: 0, zIndex: 5, display: "flex", alignItems: "center", gap: 4 }}>
                   <div style={{
                     background: color, color: "#fff", borderRadius: 8, padding: "3px 7px", fontSize: 10, fontWeight: 700,
                     boxShadow: `0 2px 8px ${color}55`, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 3,
@@ -145,6 +147,11 @@ export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nex
                     <span>{emoji}</span>
                     {isMoving ? <span>{Math.round(v.speed)} km/h</span> : <span style={{ opacity: 0.75 }}>⏹</span>}
                   </div>
+                  {delay && (
+                    <span title={delay.title} style={{ background: delay.color, color: "#fff", borderRadius: 6, padding: "2px 5px", fontSize: 9, fontWeight: 700 }}>
+                      {delay.label}
+                    </span>
+                  )}
                 </div>
               );
             })}

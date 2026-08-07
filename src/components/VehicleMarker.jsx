@@ -1,5 +1,6 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
+import { formatDelay } from "../lib/formatDelay.js";
 
 // Génère un point sur un cercle à partir d'un angle (en degrés, 0=haut, sens horaire)
 function polar(cx, cy, r, angleDeg) {
@@ -7,18 +8,22 @@ function polar(cx, cy, r, angleDeg) {
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
-function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, showLabel }) {
+function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, showLabel, delay, showDelay }) {
   const hasBearing = showCone && bearing !== null && bearing !== undefined && !isNaN(bearing);
+  const hasDelay   = showDelay && delay != null;
 
   // Dimensions du SVG global
-  const r        = dotSize / 2;           // rayon du cercle du marqueur
-  const arrowLen = dotSize * 0.62;        // longueur de la flèche, au-delà du cercle
-  const pad      = hasBearing ? arrowLen + 3 : 3; // padding autour du dot
-  const svgSize  = dotSize + pad * 2;     // taille totale du SVG
-  const cx       = svgSize / 2;
-  const cy       = svgSize / 2;
-  const fontSize = dotSize <= 22 ? 8 : 10;
-  const ringW    = isSelected ? 2.5 : 1.8;
+  const r          = dotSize / 2;           // rayon du cercle du marqueur
+  const arrowLen   = dotSize * 0.62;        // longueur de la flèche, au-delà du cercle
+  const badgeW     = delay?.label.length > 2 ? 24 : 18;
+  const padCone    = hasBearing ? arrowLen + 3 : 3;
+  const padBadge   = hasDelay ? (r + badgeW - r * 0.75) : 3; // marge à droite pour le badge de retard
+  const pad        = Math.max(padCone, padBadge, 3); // padding autour du dot
+  const svgSize    = dotSize + pad * 2;     // taille totale du SVG
+  const cx         = svgSize / 2;
+  const cy         = svgSize / 2;
+  const fontSize   = dotSize <= 22 ? 8 : 10;
+  const ringW      = isSelected ? 2.5 : 1.8;
 
   // Flèche de direction : petit triangle plein, collé au bord du cercle et
   // pointant dans le sens du véhicule (bearing). Remplace l'ancien cône en
@@ -39,6 +44,19 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, show
     ? `<circle cx="${cx}" cy="${cy}" r="${r + 3.5}" fill="white" opacity="0.25"/>`
     : "";
 
+  // Badge de retard : petite pastille en haut à droite du marqueur, façon
+  // badge de notification. "0" en vert = à l'heure, orange/rouge en retard,
+  // bleu en avance.
+  const badgeHtml = hasDelay ? (() => {
+    const bx = cx + r * 0.72;
+    const by = cy - r * 0.72;
+    return `
+      <rect x="${bx - badgeW / 2}" y="${by - 7}" width="${badgeW}" height="14" rx="7"
+        fill="${delay.color}" stroke="white" stroke-width="1.3"/>
+      <text x="${bx}" y="${by + 0.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,sans-serif" font-size="9" font-weight="700" fill="#fff">${delay.label}</text>`;
+  })() : "";
+
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg"
          width="${svgSize}" height="${svgSize}"
@@ -55,6 +73,7 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, show
         font-family="Inter,system-ui,sans-serif"
         font-size="${fontSize}" font-weight="700"
         fill="${fg}">${label}</text>` : ""}
+      ${badgeHtml}
     </svg>`;
 
   return L.divIcon({
@@ -65,7 +84,7 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, show
   });
 }
 
-export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 14 }) {
+export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 14, delaySec }) {
   const bg    = `#${v.route_color || "0074c9"}`;
   const fg    = `#${v.route_text_color || "ffffff"}`;
   const label = v.route_short_name.length > 3
@@ -78,10 +97,12 @@ export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 1
   // détail complet, pour rester repérable même après un dézoom.
   const showCone  = isSelected || zoom >= 14;
   const showLabel = isSelected || zoom >= 12;
+  const showDelay = isSelected || zoom >= 14;
   const dotSize   = isSelected ? 30 : zoom >= 14 ? 22 : zoom >= 12 ? 16 : 9;
+  const delay     = formatDelay(delaySec);
 
   const icon = buildIcon({
-    bg, fg, label, dotSize, isSelected, showCone, showLabel,
+    bg, fg, label, dotSize, isSelected, showCone, showLabel, showDelay, delay,
     bearing: v.bearing,
   });
 
@@ -116,6 +137,11 @@ export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 1
               <span style={{ fontSize: 10, color: fg, background: bg, borderRadius: 6, padding: "2px 7px", fontWeight: 600 }}>
                 {dirLabel}
               </span>
+              {delay && (
+                <span style={{ fontSize: 10, color: "#fff", background: delay.color, borderRadius: 6, padding: "2px 7px", fontWeight: 600 }} title={delay.title}>
+                  {delay.title}
+                </span>
+              )}
             </div>
 
             {v.route_long_name && (

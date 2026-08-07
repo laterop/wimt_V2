@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { loadGTFS, getVehicleType } from "./useGTFS";
 
-const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://wimt-proxy.drivedemerde.workers.dev";
+export const GTFS_RT_URL = import.meta.env.VITE_GTFS_RT_URL || "https://wimt-proxy.drivedemerde.workers.dev";
 
 export function useVehicles() {
   const [vehicules, setVehicules] = useState([]);

@@ -1,9 +1,10 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from "react";
 import "leaflet/dist/leaflet.css";
 
-import { useVehicles } from "./hooks/useVehicles";
+import { useVehicles, GTFS_RT_URL } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
 import { useAllTraces } from "./hooks/useAllTraces";
+import { useTripDelays } from "./hooks/useTripDelays";
 import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreen from "./components/SplashScreen";
@@ -70,6 +71,10 @@ export default function WimT() {
   const { vehicules, lastUpdate, error, gtfsRef } = useVehicles();
   const nextStops = useNextStop(vehicules);
   const allTraces = useAllTraces();
+  // Retards en direct (secondes) par trip_id, fournis par TAM via le flux
+  // TripUpdate. Uniquement Montpellier pour l'instant (seul réseau dont le
+  // flux expose un delay déjà calculé).
+  const delays = useTripDelays(`${GTFS_RT_URL}?feed=tripupdate`);
 
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
   const [activeTab, setActiveTab] = useState("live");
@@ -224,6 +229,7 @@ export default function WimT() {
               theme={t}
               dataBase=""
               vehicules={vehicules}
+              delays={delays}
               allTraces={allTraces}
               sortedVehicles={sortedVehicles}
               selectedVehicle={selectedVehicle}
