@@ -81,6 +81,10 @@ export default function GenericApp({ network }) {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedRouteData, setSelectedRouteData] = useState(null);
+  // Panneaux latéraux (vision desktop) : ligne (thermomètre vertical) puis,
+  // à sa droite, arrêt. Remplacent l'ancien panneau horizontal du bas.
+  const [lineDrawer, setLineDrawer] = useState(null);
+  const [stopDrawer, setStopDrawer] = useState(null);
   const [filters, setFilters] = useState({ showBus: true, showBustrams: true, showStops: false });
 
   const mapRef = useRef(null);
@@ -100,6 +104,8 @@ export default function GenericApp({ network }) {
       text_color: v.route_text_color,
       type: v.vehicleType,
     });
+    setLineDrawer({ short_name: v.route_short_name, color: v.route_color, type: v.vehicleType });
+    setStopDrawer(null);
     const gtfsData = gtfsRef.current;
     const route = gtfsData?.[v.route_id];
     setSelectedRouteData({
@@ -114,6 +120,8 @@ export default function GenericApp({ network }) {
     setSelectedVehicle(null);
     setSelectedLine(null);
     setSelectedRouteData(null);
+    setLineDrawer(null);
+    setStopDrawer(null);
   }, []);
 
   const vehiculesFiltres = vehicules.filter(v => {
@@ -209,6 +217,12 @@ export default function GenericApp({ network }) {
               selectedLine={selectedLine}
               lineVehicles={lineVehicles}
               selectedRouteData={selectedRouteData}
+              lineDrawer={lineDrawer}
+              stopDrawer={stopDrawer}
+              onOpenLine={l => { setLineDrawer(l); setStopDrawer(null); }}
+              onCloseLine={() => { setLineDrawer(null); setStopDrawer(null); }}
+              onOpenStop={setStopDrawer}
+              onCloseStop={() => setStopDrawer(null)}
               filters={filters}
               mapRef={mapRef}
               onVehicleClick={handleVehicleClick}

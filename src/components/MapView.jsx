@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
-import RoutePanel from "./RoutePanel";
 import LineDrawer from "./LineDrawer";
 import StopDetail from "./StopDetail";
 
@@ -25,19 +24,18 @@ function ZoomWatcher({ onZoom }) {
   return null;
 }
 
-export default function MapView({ theme, dataBase = "", vehicules = [], sortedVehicles, selectedVehicle, selectedVehicleObj, selectedLine, lineVehicles, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect, filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces, center = MTP_CENTER, zoom = 13 }) {
+export default function MapView({
+  theme, dataBase = "", vehicules = [], sortedVehicles, selectedVehicle, selectedVehicleObj,
+  selectedLine, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect,
+  filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces,
+  center = MTP_CENTER, zoom = 13,
+  // Panneaux latéraux (vision desktop) : ligne (thermomètre vertical) puis,
+  // à sa droite, arrêt. Pilotés par le parent (App.jsx / GenericApp.jsx) pour
+  // que tout déclencheur (clic véhicule, thermomètre, arrêt) les ouvre pareil.
+  lineDrawer, stopDrawer, onOpenLine, onCloseLine, onOpenStop, onCloseStop,
+}) {
   const { isDark, panelBg, border, borderStrong, text, textSub, textHint, mapTile, cardBg } = theme;
   const [currentZoom, setCurrentZoom] = useState(zoom);
-
-  // Panneaux ouverts par clic sur une ligne (thermomètre vertical) puis, à sa
-  // droite, sur un arrêt de cette ligne (fiche + prochains passages).
-  const [lineDrawer, setLineDrawer] = useState(null); // { short_name, color, type }
-  const [stopDrawer, setStopDrawer] = useState(null); // { id, name, lat, lon, type }
-
-  const openLine = (line) => { setLineDrawer(line); setStopDrawer(null); };
-  const closeLine = () => { setLineDrawer(null); setStopDrawer(null); };
-  const openStop = (stop) => setStopDrawer(stop);
-  const closeStop = () => setStopDrawer(null);
 
   const glassPanel = {
     background: isDark ? "rgba(15,17,23,0.82)" : "rgba(255,255,255,0.88)",
@@ -91,7 +89,7 @@ export default function MapView({ theme, dataBase = "", vehicules = [], sortedVe
                 lineCap="round"
                 lineJoin="round"
                 eventHandlers={{
-                  click: () => openLine({ short_name: num, color: color.replace("#", ""), type }),
+                  click: () => onOpenLine?.({ short_name: num, color: color.replace("#", ""), type }),
                 }}
               />
             ) : null
@@ -192,29 +190,16 @@ export default function MapView({ theme, dataBase = "", vehicules = [], sortedVe
       </div>
 
       {/* Statut live */}
-      <div style={{ position: "absolute", left: 14, bottom: selectedLine ? 170 : 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, transition: "bottom 0.25s ease" }}>
+      <div style={{ position: "absolute", left: 14, bottom: 14, zIndex: 1000, ...glassPanel, padding: "5px 10px", display: "flex", alignItems: "center", gap: 6 }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: error ? "#ef4444" : lastUpdate ? "#22c55e" : "#f59e0b", display: "block", flexShrink: 0 }}></span>
         <span style={{ fontSize: 10, color: textSub }}>
           {error ? "Hors ligne" : lastUpdate ? `${lastUpdate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Connexion..."}
         </span>
       </div>
 
-      {/* Panneau de route horizontal */}
-      {selectedLine && (
-        <RoutePanel
-          theme={theme}
-          selectedLine={selectedLine}
-          lineVehicles={lineVehicles || []}
-          nextStops={nextStops}
-          selectedVehicle={selectedVehicle}
-          onVehicleClick={onVehicleClick}
-          onClose={onDeselect}
-        />
-      )}
-
       {/* Panneaux ligne (thermomètre vertical) + arrêt, ouverts par clic sur
-          la carte. Toujours côte à côte, on scrolle horizontalement si
-          l'écran est trop étroit pour les deux. */}
+          une ligne ou un véhicule. Toujours côte à côte (vision desktop), on
+          scrolle horizontalement si l'écran est trop étroit pour les deux. */}
       {lineDrawer && (
         <div style={{
           position: "absolute", top: 108, bottom: 14, left: 14, right: 14,
@@ -228,8 +213,8 @@ export default function MapView({ theme, dataBase = "", vehicules = [], sortedVe
               line={lineDrawer}
               vehicules={vehicules}
               nextStops={nextStops}
-              onOpenStop={openStop}
-              onClose={closeLine}
+              onOpenStop={onOpenStop}
+              onClose={onCloseLine}
             />
           </div>
 
@@ -242,9 +227,9 @@ export default function MapView({ theme, dataBase = "", vehicules = [], sortedVe
                 entry={{ id: stopDrawer.id, lat: stopDrawer.lat, lon: stopDrawer.lon, types: [stopDrawer.type] }}
                 vehicules={vehicules}
                 nextStops={nextStops}
-                onTrackVehicle={(v) => { onVehicleClick(v); closeLine(); }}
+                onTrackVehicle={(v) => { onVehicleClick(v); }}
                 onSwitchEntry={() => {}}
-                onClose={closeStop}
+                onClose={onCloseStop}
                 showMiniMap={false}
               />
             </div>

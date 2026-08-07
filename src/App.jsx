@@ -77,6 +77,10 @@ export default function WimT() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedRouteData, setSelectedRouteData] = useState(null);
+  // Panneaux latéraux (vision desktop) : ligne (thermomètre vertical) puis,
+  // à sa droite, arrêt. Remplacent l'ancien panneau horizontal du bas.
+  const [lineDrawer, setLineDrawer] = useState(null); // { short_name, color, type }
+  const [stopDrawer, setStopDrawer] = useState(null); // { id, name, lat, lon, type }
   const [filters, setFilters] = useState({
     showTrams: true, showBustrams: true, showBus: true,
     showStops: false,
@@ -99,6 +103,8 @@ export default function WimT() {
       text_color: v.route_text_color,
       type: v.vehicleType,
     });
+    setLineDrawer({ short_name: v.route_short_name, color: v.route_color, type: v.vehicleType });
+    setStopDrawer(null);
     const gtfs = gtfsRef.current;
     if (!gtfs) return;
     const num = v.route_short_name;
@@ -120,6 +126,8 @@ export default function WimT() {
     setSelectedVehicle(null);
     setSelectedLine(null);
     setSelectedRouteData(null);
+    setLineDrawer(null);
+    setStopDrawer(null);
   }, []);
 
   const vehiculesFiltres = vehicules.filter(v => {
@@ -223,6 +231,12 @@ export default function WimT() {
               selectedLine={selectedLine}
               lineVehicles={lineVehicles}
               selectedRouteData={selectedRouteData}
+              lineDrawer={lineDrawer}
+              stopDrawer={stopDrawer}
+              onOpenLine={l => { setLineDrawer(l); setStopDrawer(null); }}
+              onCloseLine={() => { setLineDrawer(null); setStopDrawer(null); }}
+              onOpenStop={setStopDrawer}
+              onCloseStop={() => setStopDrawer(null)}
               filters={filters}
               mapRef={mapRef}
               onVehicleClick={handleVehicleClick}
