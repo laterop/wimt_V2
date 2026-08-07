@@ -1,64 +1,37 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 
-// Convertit une couleur hex en rgb pour rgba()
-function hexToRgb(hex) {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `${r},${g},${b}`;
-}
-
 // Génère un point sur un cercle à partir d'un angle (en degrés, 0=haut, sens horaire)
 function polar(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
-// Chemin SVG d'un arc de cercle (secteur angulaire)
-// cx, cy : centre ; r : rayon ; startDeg, endDeg : angles absolus
-function arcPath(cx, cy, r, startDeg, endDeg) {
-  const [x1, y1] = polar(cx, cy, r, startDeg);
-  const [x2, y2] = polar(cx, cy, r, endDeg);
-  const large = endDeg - startDeg > 180 ? 1 : 0;
-  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
-}
-
 function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, showLabel }) {
   const hasBearing = showCone && bearing !== null && bearing !== undefined && !isNaN(bearing);
-  const rgb = hexToRgb(bg);
 
   // Dimensions du SVG global
-  // Le cône s'étend vers l'avant : on fait un SVG assez grand pour contenir le tout
-  const coneR    = dotSize * 2.2;         // rayon du cône
-  const coneSpan = 70;                    // demi-angle du cône (140° total)
-  const pad      = hasBearing ? coneR + 2 : 3; // padding autour du dot
+  const r        = dotSize / 2;           // rayon du cercle du marqueur
+  const arrowLen = dotSize * 0.62;        // longueur de la flèche, au-delà du cercle
+  const pad      = hasBearing ? arrowLen + 3 : 3; // padding autour du dot
   const svgSize  = dotSize + pad * 2;     // taille totale du SVG
   const cx       = svgSize / 2;
   const cy       = svgSize / 2;
-  const r        = dotSize / 2;           // rayon du cercle du marqueur
   const fontSize = dotSize <= 22 ? 8 : 10;
   const ringW    = isSelected ? 2.5 : 1.8;
 
-  // Cône de vision : arc orienté selon bearing, avec dégradé radial
-  // Masqué en dessous d'un certain zoom (cf. VehicleMarker) : à l'échelle
-  // métropole, sa taille en pixels reste fixe et finit par recouvrir toute
-  // la carte de halos superposés, illisibles.
+  // Flèche de direction : petit triangle plein, collé au bord du cercle et
+  // pointant dans le sens du véhicule (bearing). Remplace l'ancien cône en
+  // dégradé radial, dont la taille fixe en pixels créait des halos flous
+  // superposés dès que plusieurs véhicules étaient proches à l'écran.
   const coneHtml = hasBearing ? (() => {
-    const startDeg = bearing - coneSpan;
-    const endDeg   = bearing + coneSpan;
-    const path     = arcPath(cx, cy, coneR, startDeg, endDeg);
-    // Identifiant unique pour le gradient (plusieurs markers sur la page)
-    const gid = `cg_${Math.round(bearing)}_${label}`.replace(/[^a-zA-Z0-9_]/g, "");
-    return `
-      <defs>
-        <radialGradient id="${gid}" cx="50%" cy="50%" r="50%">
-          <stop offset="30%" stop-color="rgb(${rgb})" stop-opacity="0.55"/>
-          <stop offset="100%" stop-color="rgb(${rgb})" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <path d="${path}" fill="url(#${gid})" stroke="none"/>`;
+    const baseHalf = 11; // demi-largeur angulaire de la base, en degrés
+    const tipR   = r + arrowLen;
+    const baseR  = r + 1;
+    const [tx, ty]   = polar(cx, cy, tipR, bearing);
+    const [lx, ly]   = polar(cx, cy, baseR, bearing - baseHalf);
+    const [rx, ry]   = polar(cx, cy, baseR, bearing + baseHalf);
+    return `<path d="M ${tx} ${ty} L ${lx} ${ly} L ${rx} ${ry} Z" fill="${bg}" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>`;
   })() : "";
 
   // Cercle du marqueur
