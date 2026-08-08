@@ -5,9 +5,11 @@ import { useVehicles, GTFS_RT_URL } from "./hooks/useVehicles";
 import { useNextStop } from "./hooks/useNextStop";
 import { useAllTraces } from "./hooks/useAllTraces";
 import { useTripDelays } from "./hooks/useTripDelays";
+import { useSettings } from "./hooks/useSettings";
 import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreen from "./components/SplashScreen";
+import SettingsPanel from "./components/SettingsPanel";
 
 // ── Lazy imports : chaque onglet charge son code à la première visite ──────────
 const MapView            = lazy(() => import("./components/MapView"));
@@ -16,6 +18,8 @@ const ThermometresPanel  = lazy(() => import("./components/ThermometresPanel"));
 const AboutPanel         = lazy(() => import("./components/AboutPanel"));
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+const EMPTY_MAP = new Map();
 
 const FILTER_CHIPS = [
   { key: "showTrams",    label: "🚊 Trams",   activeColor: "#60a5fa", activeBg: "rgba(0,116,201,0.18)" },
@@ -75,8 +79,10 @@ export default function WimT() {
   // TripUpdate. Uniquement Montpellier pour l'instant (seul réseau dont le
   // flux expose un delay déjà calculé).
   const delays = useTripDelays(`${GTFS_RT_URL}?feed=tripupdate`);
+  const { settings, toggleSetting } = useSettings();
 
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
+  const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState("live");
   const [filtreLigne, setFiltreLigne] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -124,8 +130,8 @@ export default function WimT() {
       trace = tr ? (tr[dir].length ? tr[dir] : tr.aller) : [];
       stops = gtfs.busStops.get(num) || [];
     }
-    setSelectedRouteData({ trace, stops: mergeStopsByProximity(stops), color: v.route_color, short_name: num });
-  }, [gtfsRef]);
+    setSelectedRouteData({ trace, stops: settings.mergeStops ? mergeStopsByProximity(stops) : stops, color: v.route_color, short_name: num });
+  }, [gtfsRef, settings.mergeStops]);
 
   const handleDeselect = useCallback(() => {
     setSelectedVehicle(null);
@@ -175,11 +181,22 @@ export default function WimT() {
             <span style={{ fontSize: 11, color: t.textHint, marginLeft: 6 }}>Where is my TaM</span>
           </div>
         </div>
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
-        >{theme === "dark" ? "☀️" : "🌙"}</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={() => setShowSettings(true)}
+            title="Réglages"
+            style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
+          >⚙️</button>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
+          >{theme === "dark" ? "☀️" : "🌙"}</button>
+        </div>
       </header>
+
+      {showSettings && (
+        <SettingsPanel t={t} settings={settings} onToggle={toggleSetting} onClose={() => setShowSettings(false)} />
+      )}
 
       {/* ── Corps ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
@@ -229,7 +246,9 @@ export default function WimT() {
               theme={t}
               dataBase=""
               vehicules={vehicules}
-              delays={delays}
+              delays={settings.showDelayBadge ? delays : EMPTY_MAP}
+              showDirectionArrow={settings.showDirectionArrow}
+              autoDeclutter={settings.autoDeclutter}
               allTraces={allTraces}
               sortedVehicles={sortedVehicles}
               selectedVehicle={selectedVehicle}

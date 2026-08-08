@@ -84,7 +84,7 @@ function buildIcon({ bg, fg, label, dotSize, isSelected, bearing, showCone, show
   });
 }
 
-export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 14, delaySec }) {
+export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 14, delaySec, showArrow = true, autoDeclutter = true }) {
   const bg    = `#${v.route_color || "0074c9"}`;
   const fg    = `#${v.route_text_color || "ffffff"}`;
   const label = v.route_short_name.length > 3
@@ -94,11 +94,13 @@ export default function VehicleMarker({ v, isSelected, onClick, isDark, zoom = 1
   // Allègement des marqueurs au zoom large : le cône de direction a une
   // taille fixe en pixels, donc à l'échelle métropole il finit par recouvrir
   // toute la carte de halos superposés. Le sélectionné garde toujours son
-  // détail complet, pour rester repérable même après un dézoom.
-  const showCone  = isSelected || zoom >= 14;
-  const showLabel = isSelected || zoom >= 12;
-  const showDelay = isSelected || zoom >= 14;
-  const dotSize   = isSelected ? 30 : zoom >= 14 ? 22 : zoom >= 12 ? 16 : 9;
+  // détail complet, pour rester repérable même après un dézoom. Ces seuils
+  // ne s'appliquent que si l'allègement auto est activé dans les réglages ;
+  // la flèche de direction reste par ailleurs une option indépendante.
+  const showCone  = showArrow && (isSelected || !autoDeclutter || zoom >= 14);
+  const showLabel = isSelected || !autoDeclutter || zoom >= 12;
+  const showDelay = isSelected || !autoDeclutter || zoom >= 14;
+  const dotSize   = isSelected ? 30 : !autoDeclutter ? 22 : zoom >= 14 ? 22 : zoom >= 12 ? 16 : 9;
   const delay     = formatDelay(delaySec);
 
   const icon = buildIcon({

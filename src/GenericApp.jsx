@@ -4,9 +4,11 @@ import "leaflet/dist/leaflet.css";
 import { useVehiclesGeneric } from "./hooks/useVehiclesGeneric";
 import { useTracesGeneric } from "./hooks/useTracesGeneric";
 import { useNextStop } from "./hooks/useNextStop";
+import { useSettings } from "./hooks/useSettings";
 import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreenGeneric from "./components/SplashScreenGeneric";
+import SettingsPanel from "./components/SettingsPanel";
 
 // App générique pour tout réseau "GTFS standard" (Nîmes, liO Occitanie...),
 // piloté entièrement par l'objet `network` (voir src/networks.js).
@@ -75,7 +77,10 @@ export default function GenericApp({ network }) {
   const nextStops = useNextStop(vehicules, network.dataBase);
   const allTraces = useTracesGeneric(network.dataBase);
 
+  const { settings, toggleSetting } = useSettings();
+
   const [theme, setTheme]     = useState(() => localStorage.getItem("wimt-theme") || "dark");
+  const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState("live");
   const [filtreLigne, setFiltreLigne] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -108,13 +113,14 @@ export default function GenericApp({ network }) {
     setStopDrawer(null);
     const gtfsData = gtfsRef.current;
     const route = gtfsData?.[v.route_id];
+    const stops = route?.stops || [];
     setSelectedRouteData({
       trace: [],
-      stops: mergeStopsByProximity(route?.stops || []),
+      stops: settings.mergeStops ? mergeStopsByProximity(stops) : stops,
       color: v.route_color,
       short_name: v.route_short_name,
     });
-  }, [gtfsRef]);
+  }, [gtfsRef, settings.mergeStops]);
 
   const handleDeselect = useCallback(() => {
     setSelectedVehicle(null);
@@ -163,11 +169,22 @@ export default function GenericApp({ network }) {
             <span style={{ fontSize: 11, color: t.textHint, marginLeft: 6 }}>{network.tagline}</span>
           </div>
         </div>
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
-        >{theme === "dark" ? "☀️" : "🌙"}</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={() => setShowSettings(true)}
+            title="Réglages"
+            style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
+          >⚙️</button>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}
+          >{theme === "dark" ? "☀️" : "🌙"}</button>
+        </div>
       </header>
+
+      {showSettings && (
+        <SettingsPanel t={t} settings={settings} onToggle={toggleSetting} onClose={() => setShowSettings(false)} />
+      )}
 
       {/* ── Corps ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
@@ -208,6 +225,8 @@ export default function GenericApp({ network }) {
               theme={t}
               dataBase={network.dataBase}
               vehicules={vehicules}
+              showDirectionArrow={settings.showDirectionArrow}
+              autoDeclutter={settings.autoDeclutter}
               allTraces={allTraces}
               center={network.center}
               zoom={network.zoom}

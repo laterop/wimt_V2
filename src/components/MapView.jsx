@@ -29,6 +29,9 @@ export default function MapView({
   selectedLine, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect,
   filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces,
   center = MTP_CENTER, zoom = 13,
+  // Réglages de personnalisation (cf. useSettings) : flèche de direction sur
+  // les marqueurs, allègement automatique au dézoom.
+  showDirectionArrow = true, autoDeclutter = true,
   // Panneaux latéraux (vision desktop) : ligne (thermomètre vertical) puis,
   // à sa droite, arrêt. Pilotés par le parent (App.jsx / GenericApp.jsx) pour
   // que tout déclencheur (clic véhicule, thermomètre, arrêt) les ouvre pareil.
@@ -112,7 +115,7 @@ export default function MapView({
 
         {/* Marqueurs véhicules */}
         {sortedVehicles.filter(v => v.lat != null && v.lon != null).map(v => (
-          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} delaySec={delays?.get(v.trip_id)} />
+          <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} delaySec={delays?.get(v.trip_id)} showArrow={showDirectionArrow} autoDeclutter={autoDeclutter} />
         ))}
 
         {selectedVehicleObj && <FlyTo position={[selectedVehicleObj.lat, selectedVehicleObj.lon]} />}
