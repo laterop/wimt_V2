@@ -182,6 +182,11 @@ export default function WimT() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <a
+            href="/"
+            title="Accueil"
+            style={{ width: 32, height: 32, borderRadius: 8, background: t.cardBg, border: `0.5px solid ${t.border}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, textDecoration: "none" }}
+          >🏠</a>
           <button
             onClick={() => setShowSettings(true)}
             title="Réglages"
