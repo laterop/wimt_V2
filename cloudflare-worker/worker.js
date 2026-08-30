@@ -20,7 +20,9 @@ const ENDPOINTS = {
   "tripupdate":           { url: "https://data.montpellier3m.fr/GTFS/Urbain/TripUpdate.pb",               type: "application/octet-stream" },
   "nimes-vehicle":        { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/vehicle-positions?format=json", type: "application/json" },
   "nimes-tripupdate":     { url: "https://gtfs.bus-tracker.fr/gtfs-rt/tango/trip-updates?format=json",       type: "application/json" },
-  "perpignan-tripupdate": { url: "https://eur.mecatran.com/utw/ws/gtfsfeed/realtime/perpignan?apiKey=612f606b5e3b0a3e6e1f441a2c4a050f6a345b55", type: "application/x-protobuf" },
+  // Désactivé le 29/08/2026 : aucun flux vehicle-positions fiable trouvé pour Sankéo
+  // (voir commentaire plus haut). Réactiver si un flux fiable apparaît.
+  // "perpignan-tripupdate": { url: "https://eur.mecatran.com/utw/ws/gtfsfeed/realtime/perpignan?apiKey=612f606b5e3b0a3e6e1f441a2c4a050f6a345b55", type: "application/x-protobuf" },
   "lio-vehicle":          { url: "https://lio.2cloud.app/api/gtfsrt/2.0/vehiclepositions/LIO65-6765-2617-7480/bin", type: "application/octet-stream" },
 };
 
