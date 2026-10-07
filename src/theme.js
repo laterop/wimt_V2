@@ -1,3 +1,4 @@
+const CARTO_KEY = import.meta.env.VITE_CARTO_KEY;
 export function getTheme(isDark) {
   return {
     isDark,
@@ -11,8 +12,8 @@ export function getTheme(isDark) {
     textSub:       isDark ? "#7a7f94"  : "#64748b",
     textHint:      isDark ? "#4a4f62"  : "#94a3b8",
     mapTile:       isDark
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`
+      : `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`,
     accent: "#0074c9",
   };
 }
