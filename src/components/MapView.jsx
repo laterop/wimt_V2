@@ -14,6 +14,23 @@ function FlyTo({ position }) {
   return null;
 }
 
+// Recherche de ligne : cadre la carte sur le ou les tracés trouvés, une seule
+// fois par nouvelle recherche (pas à chaque rafraîchissement des véhicules).
+function FitToLines({ lines, allTraces }) {
+  const map = useMap();
+  const key = lines ? [...lines].sort().join("|") : "";
+  useEffect(() => {
+    if (!key || !allTraces) return;
+    const pts = [];
+    for (const n of key.split("|")) {
+      const t = allTraces.get(n);
+      if (t) for (const seg of t.segments) for (const p of seg) pts.push(p);
+    }
+    if (pts.length > 1) map.flyToBounds(pts, { padding: [60, 60], duration: 0.8, maxZoom: 15 });
+  }, [key, allTraces, map]);
+  return null;
+}
+
 // Remonte le niveau de zoom courant au parent : au zoom large, on allège les
 // marqueurs (cône de direction, taille) pour éviter la bouillie visuelle
 // quand beaucoup de véhicules sont proches en pixels malgré une grande
@@ -27,7 +44,7 @@ function ZoomWatcher({ onZoom }) {
 export default function MapView({
   theme, dataBase = "", vehicules = [], delays, sortedVehicles, selectedVehicle, selectedVehicleObj,
   selectedLine, selectedRouteData, nextStops, filters, mapRef, onVehicleClick, onDeselect,
-  filtreLigne, setFiltreLigne, filterChips, toggleFilter, lastUpdate, error, allTraces,
+  filtreLigne, setFiltreLigne, searchedLines, filterChips, toggleFilter, lastUpdate, error, allTraces,
   center = MTP_CENTER, zoom = 13,
   // Réglages de personnalisation (cf. useSettings) : flèche de direction sur
   // les marqueurs, allègement automatique au dézoom.
@@ -62,6 +79,7 @@ export default function MapView({
       >
         <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url={mapTile} />
         <ZoomWatcher onZoom={setCurrentZoom} />
+        {!hasSelection && <FitToLines lines={searchedLines} allTraces={allTraces} />}
 
         {/* ── Tracés permanents de toutes les lignes ── */}
         {allTraces && [...allTraces.entries()].map(([num, { color, type, segments }]) => {
@@ -70,8 +88,13 @@ export default function MapView({
           if (type === "bustram" && !filters.showBustrams) return null;
           if (type === "bus"     && !filters.showBus)      return null;
 
-          const isSelected = hasSelection && selectedLine?.short_name === num;
-          const isDimmed   = hasSelection && !isSelected;
+          // Une sélection (clic) prime sur la recherche ; sinon la recherche
+          // met en valeur les lignes trouvées et atténue les autres.
+          const isSearching = !hasSelection && !!searchedLines?.size;
+          const isSelected = hasSelection
+            ? selectedLine?.short_name === num
+            : isSearching && searchedLines.has(num);
+          const isDimmed   = (hasSelection || isSearching) && !isSelected;
 
           // Épaisseur : tram plus épais que bus, encore plus si sélectionné
           const weight = isSelected
@@ -86,11 +109,10 @@ export default function MapView({
               <Polyline
                 key={`${num}-${si}`}
                 positions={seg}
-                color={color}
-                weight={weight}
-                opacity={opacity}
-                lineCap="round"
-                lineJoin="round"
+                // react-leaflet v4 ne met à jour le style qu'au travers de
+                // pathOptions : avec color/weight/opacity en props directes,
+                // la mise en valeur (sélection, recherche) ne s'appliquait jamais.
+                pathOptions={{ color, weight, opacity, lineCap: "round", lineJoin: "round" }}
                 eventHandlers={{
                   click: () => onOpenLine?.({ short_name: num, color: color.replace("#", ""), type }),
                 }}

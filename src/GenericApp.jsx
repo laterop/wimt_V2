@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
 import "leaflet/dist/leaflet.css";
 
 import { useVehiclesGeneric } from "./hooks/useVehiclesGeneric";
@@ -9,6 +9,7 @@ import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreenGeneric from "./components/SplashScreenGeneric";
 import SettingsPanel from "./components/SettingsPanel";
+import { matchLines, vehicleMatchesSearch } from "./lib/matchLines";
 
 // App générique pour tout réseau "GTFS standard" (Nîmes, liO Occitanie...),
 // piloté entièrement par l'objet `network` (voir src/networks.js).
@@ -130,11 +131,15 @@ export default function GenericApp({ network }) {
     setStopDrawer(null);
   }, []);
 
+  const searchedLines = useMemo(
+    () => matchLines(filtreLigne, [...(allTraces ? allTraces.keys() : []), ...vehicules.map(v => v.route_short_name)]),
+    [filtreLigne, allTraces, vehicules]
+  );
+
   const vehiculesFiltres = vehicules.filter(v => {
     if (!filters.showBustrams && v.vehicleType === "bustram") return false;
     if (!filters.showBus      && v.vehicleType === "bus")     return false;
-    const q = filtreLigne.toLowerCase();
-    return !q || v.route_short_name.toLowerCase().includes(q) || v.headsign.toLowerCase().includes(q);
+    return vehicleMatchesSearch(v, filtreLigne, searchedLines);
   });
 
   const sortedVehicles = [...vehiculesFiltres].sort((a, b) =>
@@ -233,6 +238,7 @@ export default function GenericApp({ network }) {
               showDirectionArrow={settings.showDirectionArrow}
               autoDeclutter={settings.autoDeclutter}
               allTraces={allTraces}
+              searchedLines={searchedLines}
               center={network.center}
               zoom={network.zoom}
               sortedVehicles={sortedVehicles}

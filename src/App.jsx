@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
 import "leaflet/dist/leaflet.css";
 
 import { useVehicles, GTFS_RT_URL } from "./hooks/useVehicles";
@@ -10,6 +10,7 @@ import { mergeStopsByProximity } from "./lib/mergeStops.js";
 import { getTheme } from "./theme";
 import SplashScreen from "./components/SplashScreen";
 import SettingsPanel from "./components/SettingsPanel";
+import { matchLines, vehicleMatchesSearch } from "./lib/matchLines";
 
 // ── Lazy imports : chaque onglet charge son code à la première visite ──────────
 const MapView            = lazy(() => import("./components/MapView"));
@@ -141,12 +142,16 @@ export default function WimT() {
     setStopDrawer(null);
   }, []);
 
+  const searchedLines = useMemo(
+    () => matchLines(filtreLigne, [...(allTraces ? allTraces.keys() : []), ...vehicules.map(v => v.route_short_name)]),
+    [filtreLigne, allTraces, vehicules]
+  );
+
   const vehiculesFiltres = vehicules.filter(v => {
     if (!filters.showTrams    && v.vehicleType === "tram")    return false;
     if (!filters.showBustrams && v.vehicleType === "bustram") return false;
     if (!filters.showBus      && v.vehicleType === "bus")     return false;
-    const q = filtreLigne.toLowerCase();
-    return !q || v.route_short_name.toLowerCase().includes(q) || v.headsign.toLowerCase().includes(q);
+    return vehicleMatchesSearch(v, filtreLigne, searchedLines);
   });
 
   const sortedVehicles = [...vehiculesFiltres].sort((a, b) =>
@@ -255,6 +260,7 @@ export default function WimT() {
               showDirectionArrow={settings.showDirectionArrow}
               autoDeclutter={settings.autoDeclutter}
               allTraces={allTraces}
+              searchedLines={searchedLines}
               sortedVehicles={sortedVehicles}
               selectedVehicle={selectedVehicle}
               selectedVehicleObj={selectedVehicleObj}
