@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import VehicleMarker from "./VehicleMarker";
 import LineDrawer from "./LineDrawer";
@@ -6,11 +6,26 @@ import StopDetail from "./StopDetail";
 
 const MTP_CENTER = [43.6117, 3.8767];
 
-function FlyTo({ position }) {
+// Centre la carte sur le véhicule sélectionné UNE fois, au moment de la
+// sélection. Avant, l'effet dépendait du tableau [lat, lon] recréé à chaque
+// rafraîchissement des positions : la carte se recentrait en boucle sur le
+// bus et on ne pouvait plus en sortir en la déplaçant.
+function FlyTo({ vehicleId, lat, lon }) {
   const map = useMap();
   useEffect(() => {
-    if (position) map.flyTo(position, 16, { duration: 0.8 });
-  }, [position, map]);
+    if (vehicleId != null && lat != null && lon != null) map.flyTo([lat, lon], 16, { duration: 0.8 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicleId, map]);
+  return null;
+}
+
+// Échap = retour à la vue d'ensemble.
+function EscapeToReset({ onReset }) {
+  useEffect(() => {
+    const h = e => { if (e.key === "Escape") onReset(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onReset]);
   return null;
 }
 
@@ -67,6 +82,14 @@ export default function MapView({
 
   // Paramètres visuels des tracés selon l'état de sélection
   const hasSelection = !!selectedLine;
+
+  // Retour à la vue d'ensemble : désélectionne tout, ferme les panneaux,
+  // vide la recherche et recadre sur le réseau.
+  const resetView = useCallback(() => {
+    onDeselect?.();
+    setFiltreLigne?.("");
+    mapRef.current?.setView(center, zoom);
+  }, [onDeselect, setFiltreLigne, mapRef, center, zoom]);
 
   return (
     <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
@@ -140,8 +163,29 @@ export default function MapView({
           <VehicleMarker key={v.id} v={v} isSelected={selectedVehicle === v.id} onClick={() => onVehicleClick(v)} isDark={isDark} zoom={currentZoom} delaySec={delays?.get(v.trip_id)} showArrow={showDirectionArrow} autoDeclutter={autoDeclutter} />
         ))}
 
-        {selectedVehicleObj && <FlyTo position={[selectedVehicleObj.lat, selectedVehicleObj.lon]} />}
+        {selectedVehicleObj && <FlyTo vehicleId={selectedVehicleObj.id} lat={selectedVehicleObj.lat} lon={selectedVehicleObj.lon} />}
       </MapContainer>
+
+      {(hasSelection || selectedVehicle != null) && <EscapeToReset onReset={resetView} />}
+
+      {/* Bouton retour : visible dès qu'une ligne ou un véhicule est sélectionné */}
+      {(hasSelection || selectedVehicle != null) && (
+        <button
+          onClick={resetView}
+          title="Retour à la vue d'ensemble (Échap)"
+          style={{
+            ...glassPanel, position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1100,
+            padding: "9px 16px", borderRadius: 22, cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+            color: text, fontSize: 13, fontWeight: 600, fontFamily: "'Inter',system-ui,sans-serif",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Vue d'ensemble
+        </button>
+      )}
 
       {/* Barre de recherche flottante */}
       <div style={{ position: "absolute", top: 14, left: 14, right: 14, zIndex: 1000, display: "flex", gap: 8 }}>
