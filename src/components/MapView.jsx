@@ -239,6 +239,8 @@ export default function MapView({
               vehicules={vehicules}
               nextStops={nextStops}
               delays={delays}
+              selectedVehicle={selectedVehicle}
+              onVehicleClick={onVehicleClick}
               onOpenStop={onOpenStop}
               onClose={onCloseLine}
             />

@@ -14,6 +14,7 @@ import { formatDelay } from "../lib/formatDelay.js";
 //   line         : { short_name, color, type } — la ligne cliquée
 //   vehicules    : véhicules du réseau (filtrés ici sur la ligne)
 //   nextStops    : Map<vehicleId, nextStopInfo> (cf. useNextStop)
+//   selectedVehicle / onVehicleClick(v) : clic sur un véhicule du thermomètre = centrage carte
 //   onOpenStop(stopId, name, lat, lon, type) : ouvre l'arrêt dans le panneau suivant
 //   onClose()
 
@@ -44,7 +45,7 @@ function vehicleProgress(ns, seqLen) {
   return seqIndex / total;
 }
 
-export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nextStops = new Map(), delays, onOpenStop, onClose }) {
+export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nextStops = new Map(), delays, selectedVehicle, onVehicleClick, onOpenStop, onClose }) {
   const [gtfsData, setGtfsData] = useState(null);
   const [dir, setDir] = useState("0");
 
@@ -140,13 +141,21 @@ export default function LineDrawer({ t, dataBase = "", line, vehicules = [], nex
               const delay = formatDelay(delays?.get(v.trip_id));
               return (
                 <div key={v.id} style={{ position: "absolute", top: top - 10, left: 0, zIndex: 5, display: "flex", alignItems: "center", gap: 4 }}>
-                  <div style={{
-                    background: color, color: "#fff", borderRadius: 8, padding: "3px 7px", fontSize: 10, fontWeight: 700,
-                    boxShadow: `0 2px 8px ${color}55`, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 3,
-                  }}>
+                  {/* Clic sur le véhicule : centre la carte dessus et le sélectionne */}
+                  <button
+                    type="button"
+                    onClick={() => onVehicleClick?.(v)}
+                    title="Centrer la carte sur ce véhicule"
+                    style={{
+                      background: color, color: "#fff", borderRadius: 8, padding: "3px 7px", fontSize: 10, fontWeight: 700,
+                      boxShadow: selectedVehicle === v.id ? `0 0 0 2px #fff, 0 0 0 4px ${color}` : `0 2px 8px ${color}55`,
+                      whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 3,
+                      border: "none", cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >
                     <span>{emoji}</span>
                     {isMoving ? <span>{Math.round(v.speed)} km/h</span> : <span style={{ opacity: 0.75 }}>⏹</span>}
-                  </div>
+                  </button>
                   {delay && (
                     <span title={delay.title} style={{ background: delay.color, color: "#fff", borderRadius: 6, padding: "2px 5px", fontSize: 9, fontWeight: 700 }}>
                       {delay.label}
